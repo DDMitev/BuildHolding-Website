@@ -7,44 +7,49 @@ import { projectService } from '../services/api.service';
 
 const ProjectCard = ({ project }) => {
   const { t } = useTranslation();
+  const [imageUrl, setImageUrl] = useState("https://via.placeholder.com/600x400?text=BuildHolding+Project");
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  useEffect(() => {
+    // Define a guaranteed image URL
+    let url = "https://via.placeholder.com/600x400?text=BuildHolding+Project";
+    
+    // Try to get an image from the project
+    if (project?.images && project.images[0]?.url && project.images[0].url.startsWith('http')) {
+      url = project.images[0].url;
+    } else if (project?.mainImageUrl && project.mainImageUrl.startsWith('http')) {
+      url = project.mainImageUrl;
+    }
+    
+    // Set the image URL
+    setImageUrl(url);
+    
+    // Preload the image
+    const img = new Image();
+    img.src = url;
+    img.onload = () => setImageLoaded(true);
+    img.onerror = () => {
+      console.error("Failed to load image:", url);
+      setImageUrl("https://via.placeholder.com/600x400?text=BuildHolding+Project");
+      setImageLoaded(true);
+    };
+  }, [project]);
   
   if (!project) return null;
   
-  // Helper function to ensure image URLs resolve correctly
-  const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return "https://via.placeholder.com/600x400?text=BuildHolding+Project";
-    
-    // If it's already an absolute URL (starts with http or https), use it as is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    
-    // For relative URLs, ensure they're properly resolved
-    // If the URL starts with a slash, it's already relative to the root
-    if (imageUrl.startsWith('/')) {
-      return imageUrl;
-    }
-    
-    // Otherwise, add a slash to make it relative to the root
-    return `/${imageUrl}`;
-  };
-  
   return (
     <div className="col-md-6 col-lg-4 mb-4">
-      <div className="card project-card h-100" style={{ 
-        backgroundColor: '#ffffff !important',
-        border: '1px solid #dee2e6'
-      }}>
+      <div className="card project-card h-100">
         <div className="position-relative">
           <img 
-            src={getImageUrl(
-              project.images && project.images[0]?.url 
-                ? project.images[0].url 
-                : (project.mainImageUrl || "")
-            )}
+            src={imageUrl}
             className="card-img-top" 
             alt={project.title?.en || "Project"} 
-            style={{ height: '240px', objectFit: 'cover' }}
+            style={{ 
+              height: '240px', 
+              objectFit: 'cover',
+              backgroundColor: '#f8f9fa'
+            }}
             onError={(e) => {
               e.target.onerror = null; 
               e.target.src = "https://via.placeholder.com/600x400?text=BuildHolding+Project";
@@ -64,19 +69,19 @@ const ProjectCard = ({ project }) => {
             </span>
           </div>
         </div>
-        <div className="card-body" style={{ backgroundColor: '#ffffff !important' }}>
-          <h3 className="card-title h5" style={{ color: '#212529 !important', fontWeight: 'bold' }}>{project.title?.en}</h3>
-          <p className="card-text small text-muted" style={{ color: '#6c757d !important' }}>
+        <div className="card-body">
+          <h3 className="card-title h5">{project.title?.en}</h3>
+          <p className="card-text small text-muted">
             {project.category?.en}
           </p>
-          <p className="card-text" style={{ color: '#495057 !important' }}>
+          <p className="card-text">
             {project.shortDescription?.en || 
               (project.description?.en?.length > 100 
                 ? `${project.description.en.substring(0, 100)}...` 
                 : project.description?.en)
             }
           </p>
-          <Link to={`/projects/${project._id || project.id}`} className="btn btn-sm btn-outline-primary" style={{ color: '#0056b3 !important', borderColor: '#0056b3' }}>
+          <Link to={`/projects/${project._id || project.id}`} className="btn btn-sm btn-outline-primary">
             {t('home.featured.viewDetails')}
           </Link>
         </div>
@@ -190,13 +195,12 @@ const ProjectsPage = () => {
           {/* Filters */}
           <div className="row mb-4">
             <div className="col-md-6 col-lg-3 mb-3">
-              <label className="form-label" style={{ color: '#212529' }}>{t('projects.filters.category')}</label>
+              <label className="form-label">{t('projects.filters.category')}</label>
               <select 
                 className="form-select" 
                 name="category" 
                 value={filter.category}
                 onChange={handleFilterChange}
-                style={{ color: '#212529', backgroundColor: '#ffffff' }}
               >
                 {getCategories().map((category, index) => (
                   <option key={index} value={category.toLowerCase()}>
@@ -207,13 +211,12 @@ const ProjectsPage = () => {
             </div>
             
             <div className="col-md-6 col-lg-3 mb-3">
-              <label className="form-label" style={{ color: '#212529' }}>{t('projects.filters.status')}</label>
+              <label className="form-label">{t('projects.filters.status')}</label>
               <select 
                 className="form-select" 
                 name="status" 
                 value={filter.status}
                 onChange={handleFilterChange}
-                style={{ color: '#212529', backgroundColor: '#ffffff' }}
               >
                 {getStatuses().map((status, index) => (
                   <option key={index} value={status.toLowerCase()}>
@@ -247,7 +250,7 @@ const ProjectsPage = () => {
               ))
             ) : (
               <div className="col-12 text-center py-5">
-                <p style={{color: '#495057'}}>No projects found matching the selected filters.</p>
+                <p>No projects found matching the selected filters.</p>
               </div>
             )}
           </div>
