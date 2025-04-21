@@ -401,7 +401,7 @@ const OurHoldingPage = () => {
             id="mission" 
             role="tabpanel"
           >
-            <div className="row" data-aos="fade-up">
+            <div className="row">
               <div className="col-lg-10 col-xl-8 mx-auto p-4 bg-light rounded shadow-sm">
                 <h2 className="mission-title">{t('ourHolding.tabs.mission.title')}</h2>
                 <p className="mission-content lead">{t('ourHolding.tabs.mission.content')}</p>
@@ -415,7 +415,7 @@ const OurHoldingPage = () => {
             id="who" 
             role="tabpanel"
           >
-            <div className="row" data-aos="fade-up">
+            <div className="row">
               <div className="col-md-6 mb-4">
                 <h2>{t('ourHolding.tabs.who.title')}</h2>
                 <p className="lead">{t('ourHolding.tabs.who.content')}</p>
@@ -436,14 +436,14 @@ const OurHoldingPage = () => {
             id="team" 
             role="tabpanel"
           >
-            <div className="row" data-aos="fade-up">
+            <div className="row">
               <div className="col-md-6 mb-4">
                 <h2>{t('ourHolding.tabs.team.title')}</h2>
                 <p className="lead">{t('ourHolding.tabs.team.content')}</p>
               </div>
               <div className="col-md-6 mb-4">
                 <img 
-                  src="https://picsum.photos/seed/team/600/400" 
+                  src="https://picsum.photos/seed/ourteam/600/400" 
                   alt={t('ourHolding.tabs.team.title')} 
                   className="img-fluid rounded shadow"
                 />
@@ -457,7 +457,7 @@ const OurHoldingPage = () => {
             id="equipment" 
             role="tabpanel"
           >
-            <div className="row mb-4" data-aos="fade-up">
+            <div className="row mb-4">
               <div className="col-12">
                 <h2>{t('ourHolding.tabs.equipment.title')}</h2>
                 <p className="lead mb-4">{t('ourHolding.tabs.equipment.content')}</p>
@@ -488,7 +488,7 @@ const OurHoldingPage = () => {
             id="quality" 
             role="tabpanel"
           >
-            <div className="row" data-aos="fade-up">
+            <div className="row">
               <div className="col-lg-4 mb-4">
                 <h2>{t('ourHolding.tabs.quality.title')}</h2>
                 <p className="lead mb-4">{t('ourHolding.tabs.quality.content')}</p>
@@ -527,7 +527,7 @@ const OurHoldingPage = () => {
             id="timeline" 
             role="tabpanel"
           >
-            <div className="row mb-4" data-aos="fade-up">
+            <div className="row mb-4">
               <div className="col-12 text-center">
                 <h2 className="display-4 timeline-heading">{t('ourHolding.tabs.timeline.title')}</h2>
                 <p className="lead mb-5">{t('ourHolding.tabs.timeline.content')}</p>
@@ -541,8 +541,6 @@ const OurHoldingPage = () => {
                 <div 
                   key={index} 
                   className={`timeline-event ${animateTimeline ? 'animated' : ''}`}
-                  data-aos={index % 2 === 0 ? "fade-right" : "fade-left"}
-                  data-aos-delay={index * 100}
                 >
                   <TimelineMarker icon={milestone.icon} bgColor={milestone.bgColor} />
                   <TimelineContent 
@@ -562,7 +560,7 @@ const OurHoldingPage = () => {
             id="partners" 
             role="tabpanel"
           >
-            <div className="row mb-5" data-aos="fade-up">
+            <div className="row mb-5">
               <div className="col-12 text-center">
                 <h2 className="display-4 mb-3">{t('ourHolding.tabs.partners.title')}</h2>
                 <p className="lead mb-5">{t('ourHolding.tabs.partners.content')}</p>
@@ -572,7 +570,7 @@ const OurHoldingPage = () => {
             <div className="partners-container">
               <div className="row partners-showcase">
                 {partners.map((partner, index) => (
-                  <div className="col-md-6 col-lg-3 mb-4" key={partner.id} data-aos="fade-up" data-aos-delay={index * 100}>
+                  <div className="col-md-6 col-lg-3 mb-4" key={partner.id}>
                     <div className="partner-card">
                       <div className="partner-card-inner">
                         <div className="partner-card-front">
@@ -606,7 +604,7 @@ const OurHoldingPage = () => {
             id="clients" 
             role="tabpanel"
           >
-            <div className="row mb-5" data-aos="fade-up">
+            <div className="row mb-5">
               <div className="col-12 text-center">
                 <h2 className="display-4 mb-3">{t('ourHolding.tabs.clients.title')}</h2>
                 <p className="lead mb-5">{t('ourHolding.tabs.clients.content')}</p>
@@ -616,7 +614,7 @@ const OurHoldingPage = () => {
             <div className="clients-container">
               <div className="row clients-showcase">
                 {clients.map((client, index) => (
-                  <div className="col-md-6 col-lg-3 mb-4" key={client.id} data-aos="fade-up" data-aos-delay={index * 100}>
+                  <div className="col-md-6 col-lg-3 mb-4" key={client.id}>
                     <div className="client-card">
                       <div className="client-card-inner">
                         <div className="client-card-front">
