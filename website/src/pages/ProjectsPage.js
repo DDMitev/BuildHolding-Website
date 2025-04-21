@@ -10,6 +10,25 @@ const ProjectCard = ({ project }) => {
   
   if (!project) return null;
   
+  // Helper function to ensure image URLs resolve correctly
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return "https://via.placeholder.com/600x400?text=BuildHolding+Project";
+    
+    // If it's already an absolute URL (starts with http or https), use it as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // For relative URLs, ensure they're properly resolved
+    // If the URL starts with a slash, it's already relative to the root
+    if (imageUrl.startsWith('/')) {
+      return imageUrl;
+    }
+    
+    // Otherwise, add a slash to make it relative to the root
+    return `/${imageUrl}`;
+  };
+  
   return (
     <div className="col-md-6 col-lg-4 mb-4">
       <div className="card project-card h-100" style={{ 
@@ -18,9 +37,11 @@ const ProjectCard = ({ project }) => {
       }}>
         <div className="position-relative">
           <img 
-            src={project.images && project.images[0]?.url 
-              ? project.images[0].url 
-              : (project.mainImageUrl || "https://via.placeholder.com/600x400?text=BuildHolding+Project")} 
+            src={getImageUrl(
+              project.images && project.images[0]?.url 
+                ? project.images[0].url 
+                : (project.mainImageUrl || "")
+            )}
             className="card-img-top" 
             alt={project.title?.en || "Project"} 
             style={{ height: '240px', objectFit: 'cover' }}

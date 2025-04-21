@@ -10,14 +10,35 @@ import * as projectStorage from '../services/projectStorage';
 const FeaturedProject = ({ project }) => {
   if (!project) return null;
   
+  // Helper function to ensure image URLs resolve correctly
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return "https://via.placeholder.com/600x400?text=BuildHolding";
+    
+    // If it's already an absolute URL (starts with http or https), use it as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // For relative URLs, ensure they're properly resolved
+    // If the URL starts with a slash, it's already relative to the root
+    if (imageUrl.startsWith('/')) {
+      return imageUrl;
+    }
+    
+    // Otherwise, add a slash to make it relative to the root
+    return `/${imageUrl}`;
+  };
+  
   return (
     <div className="col-lg-6 mb-4">
-      <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff'}}>
+      <div className="card h-100 border border-secondary project-card">
         <div className="position-relative">
           <img 
-            src={project.images && project.images[0]?.url 
-              ? project.images[0].url 
-              : (project.mainImageUrl || "https://via.placeholder.com/600x400?text=BuildHolding")}
+            src={getImageUrl(
+              project.images && project.images[0]?.url 
+                ? project.images[0].url 
+                : (project.mainImageUrl || "")
+            )}
             className="card-img-top" 
             alt={project.title?.en || "Project"}
             style={{ height: "240px", objectFit: "cover" }}
@@ -33,13 +54,13 @@ const FeaturedProject = ({ project }) => {
              project.status || "In Progress"}
           </span>
         </div>
-        <div className="card-body bg-white">
-          <h3 className="card-title h4 text-dark !important">{project.title?.en || "Project Title"}</h3>
+        <div className="card-body">
+          <h3 className="card-title h4">{project.title?.en || "Project Title"}</h3>
           <p className="card-text text-muted mb-3">
             <i className="fas fa-map-marker-alt me-2"></i>
             {project.location?.address?.en || "Sofia, Bulgaria"}
           </p>
-          <p className="card-text mb-4 text-dark !important">
+          <p className="card-text mb-4">
             {project.shortDescription?.en || project.description?.en || "Project description goes here"}
           </p>
           <Link to={`/projects/${project._id || project.id || "1"}`} className="btn btn-outline-primary">
