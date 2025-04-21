@@ -12,32 +12,60 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>BuildHolding</title>
+    
     <!-- Force zero margins to fix footer issues -->
     <style>
-      html, body {
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 100% !important;
-        min-height: 100% !important;
+      body, html {
+        margin: 0; 
+        padding: 0;
+        width: 100%;
         overflow-x: hidden;
       }
-      
-      #root {
-        min-height: 100%;
-        display: flex;
-        flex-direction: column;
-        margin: 0 !important;
-        padding: 0 !important;
+      body {
+        position: relative;
+        min-height: 100vh;
       }
-
-      /* Fix for space below footer */
-      body::after {
-        content: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 0 !important;
+      /* Ensure dark background items have proper contrast */
+      .dark-bg .text-white {
+        color: #ffffff !important;
+      }
+      /* Fix for text contrast in cards */
+      .card-title, .card-text {
+        color: #333 !important; 
+      }
+      /* Fix for project card visibility */
+      .project-card {
+        background-color: #f8f9fa !important;
+        border: 1px solid #dee2e6 !important;
       }
     </style>
+    
+    <!-- Netlify SPA routing fix -->
+    <script type="text/javascript">
+      // This script handles routing for single page applications
+      // It helps with direct URL access and refreshes on routes
+      (function() {
+        // Don't run this in development
+        if (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1') {
+          return;
+        }
+        
+        // Check if we need to redirect
+        var pathname = window.location.pathname;
+        var search = window.location.search;
+        var hash = window.location.hash;
+        
+        // If this is a direct page load (not a route handled by React Router)
+        // we need to make sure the app loads and handles the route
+        if (pathname !== '/' && 
+            !pathname.includes('.')) {  // Skip for asset URLs
+          // Let the app know that we need to handle this path
+          sessionStorage.setItem('spa_redirect_path', pathname + search + hash);
+        }
+      })();
+    </script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   </head>

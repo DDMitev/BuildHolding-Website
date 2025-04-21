@@ -43,6 +43,20 @@ const RouteChangeHandler = ({ children }) => {
 function App() {
   const [loading, setLoading] = useState(true);
 
+  // Handle SPA redirect paths from direct URL access
+  useEffect(() => {
+    // Check if we have a redirect path stored (from our index.html script)
+    const redirectPath = sessionStorage.getItem('spa_redirect_path');
+    if (redirectPath) {
+      // Clear it so we don't redirect again
+      sessionStorage.removeItem('spa_redirect_path');
+      // Only redirect if we're not already on that path
+      if (window.location.pathname !== redirectPath) {
+        window.history.replaceState(null, null, redirectPath);
+      }
+    }
+  }, []);
+
   // Initialize AOS - re-enable animations but keep them subtle
   useEffect(() => {
     AOS.init({
