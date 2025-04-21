@@ -1,7 +1,7 @@
 [build]
-  base = "website/"
-  publish = "build/"
-  command = "npm run build"
+  base = "/"
+  publish = "website/build/"
+  command = "cd website && npm run build"
 
 [build.environment]
   REACT_APP_BASE_URL = "/"
