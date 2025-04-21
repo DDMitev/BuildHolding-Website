@@ -6,7 +6,7 @@
 [build.environment]
   REACT_APP_BASE_URL = "/"
   CI = "false"
-  NODE_VERSION = "18.x"
+  NODE_VERSION = "16.14.0"
 
 [[redirects]]
   from = "/*"
