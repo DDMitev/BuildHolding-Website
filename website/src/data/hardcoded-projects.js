@@ -1,5 +1,4 @@
 // Hardcoded projects data that will work reliably
-import * as projectStorage from '../services/projectStorage';
 
 // Original hardcoded projects - to be used as fallback or defaults
 const originalProjects = [
@@ -599,7 +598,5 @@ const originalProjects = [
   }
 ];
 
-// Get the projects either from localStorage or original data
-const hardcodedProjects = projectStorage.getProjects() || originalProjects;
-
-export default hardcodedProjects;
+// Export the original projects directly
+export default originalProjects;
