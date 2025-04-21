@@ -1,0 +1,77 @@
+[
+  {
+    "id": "1",
+    "title": { "en": "Modern Office Building", "bg": "Модерна офис сграда", "ru": "Современное офисное здание" },
+    "description": { "en": "A sleek new office complex.", "bg": "Елегантен нов офис комплекс.", "ru": "Элегантный новый офисный комплекс." },
+    "category": { "en": "Commercial", "bg": "Търговско", "ru": "Коммерческое" },
+    "status": "in-progress",
+    "featured": true,
+    "mainImageUrl": "https://picsum.photos/seed/office1/600/400",
+    "galleryImages": [
+      "https://picsum.photos/seed/office1a/600/400",
+      "https://picsum.photos/seed/office1b/600/400",
+      "https://picsum.photos/seed/office1c/600/400"
+    ],
+    "location": { "lat": 42.6977, "lng": 23.3219 }
+  },
+  {
+    "id": "2",
+    "title": { "en": "Residential Complex Sunset", "bg": "Жилищен комплекс Сънсет", "ru": "Жилой комплекс Сансет" },
+    "description": { "en": "A vibrant residential community with modern amenities.", "bg": "Живописна жилищна общност с модерни удобства.", "ru": "Яркий жилой комплекс с современными удобствами." },
+    "category": { "en": "Residential", "bg": "Жилищно", "ru": "Жилое" },
+    "status": "planned",
+    "featured": false,
+    "mainImageUrl": "https://picsum.photos/seed/residential2/600/400",
+    "galleryImages": [
+      "https://picsum.photos/seed/residential2a/600/400",
+      "https://picsum.photos/seed/residential2b/600/400",
+      "https://picsum.photos/seed/residential2c/600/400"
+    ],
+    "location": { "lat": 42.15, "lng": 24.75 }
+  },
+  {
+    "id": "3",
+    "title": { "en": "City Center Mall", "bg": "Мол в Сити Център", "ru": "Торговый центр в центре города" },
+    "description": { "en": "A bustling retail hub in the heart of downtown.", "bg": "Живописен търговски център в сърцето на града.", "ru": "Оживленный торговый центр в центре города." },
+    "category": { "en": "Commercial", "bg": "Търговско", "ru": "Коммерческое" },
+    "status": "complete",
+    "featured": true,
+    "mainImageUrl": "https://picsum.photos/seed/mall3/600/400",
+    "galleryImages": [
+      "https://picsum.photos/seed/mall3a/600/400",
+      "https://picsum.photos/seed/mall3b/600/400",
+      "https://picsum.photos/seed/mall3c/600/400"
+    ],
+    "location": { "lat": 42.5, "lng": 23.333 }
+  },
+  {
+    "id": "4",
+    "title": { "en": "Riverside Apartments", "bg": "Апартаменти край реката", "ru": "Апартаменты у реки" },
+    "description": { "en": "Luxury apartments with river views.", "bg": "Луксозни апартаменти с изглед към реката.", "ru": "Роскошные апартаменты с видом на реку." },
+    "category": { "en": "Residential", "bg": "Жилищно", "ru": "Жилое" },
+    "status": "in-progress",
+    "featured": false,
+    "mainImageUrl": "https://picsum.photos/seed/riverside4/600/400",
+    "galleryImages": [
+      "https://picsum.photos/seed/riverside4a/600/400",
+      "https://picsum.photos/seed/riverside4b/600/400",
+      "https://picsum.photos/seed/riverside4c/600/400"
+    ],
+    "location": { "lat": 42.8, "lng": 23.38 }
+  },
+  {
+    "id": "5",
+    "title": { "en": "Mountain Retreat Lodge", "bg": "Планинско бунгало", "ru": "Горный коттедж" },
+    "description": { "en": "A cozy lodge nestled in the mountains.", "bg": "Уютно бунгало в планината.", "ru": "Уютный коттедж в горах." },
+    "category": { "en": "Hospitality", "bg": "Хотелиерство", "ru": "Гостеприимство" },
+    "status": "planned",
+    "featured": false,
+    "mainImageUrl": "https://picsum.photos/seed/lodge5/600/400",
+    "galleryImages": [
+      "https://picsum.photos/seed/lodge5a/600/400",
+      "https://picsum.photos/seed/lodge5b/600/400",
+      "https://picsum.photos/seed/lodge5c/600/400"
+    ],
+    "location": { "lat": 42.6, "lng": 23.25 }
+  }
+]

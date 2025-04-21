@@ -1,0 +1,311 @@
+{
+  "navigation": {
+    "home": "Home",
+    "projects": "Projects",
+    "ourHolding": "Our Holding",
+    "contact": "Contact",
+    "admin": "Admin"
+  },
+  "home": {
+    "hero": {
+      "title": "Building Excellence",
+      "subtitle": "Creating landmark properties with innovation and integrity",
+      "buttonText": "View Our Projects"
+    },
+    "about": {
+      "title": "Building Excellence Since 1995",
+      "description1": "BuildHolding is a premier construction company specializing in commercial and residential properties across Bulgaria.",
+      "description2": "With over 25 years of experience, we've established ourselves as a trusted partner for clients seeking quality, innovation, and reliability.",
+      "buttonText": "Learn About Us"
+    },
+    "featured": {
+      "title": "Featured Projects",
+      "subtitle": "Explore our latest and most notable work",
+      "viewDetails": "View Details",
+      "viewAll": "View All Projects"
+    },
+    "services": {
+      "title": "Our Services",
+      "subtitle": "Comprehensive solutions for all your construction needs",
+      "commercial": {
+        "title": "Commercial Construction",
+        "description": "Office buildings, retail spaces, and industrial facilities built to the highest standards."
+      },
+      "residential": {
+        "title": "Residential Development",
+        "description": "Luxury apartments, family homes, and residential complexes designed for modern living."
+      },
+      "renovation": {
+        "title": "Renovation & Remodeling",
+        "description": "Transform existing spaces with our expert renovation and remodeling services."
+      }
+    },
+    "cta": {
+      "title": "Ready to start your project?",
+      "subtitle": "Contact us today for a free consultation and quote.",
+      "buttonText": "Get in Touch"
+    }
+  },
+  "projects": {
+    "hero": {
+      "title": "Our Projects",
+      "subtitle": "Quality construction for every need"
+    },
+    "filters": {
+      "category": "Category",
+      "status": "Status",
+      "allCategories": "All Categories",
+      "allStatuses": "All Statuses",
+      "planned": "Planned",
+      "inProgress": "In Progress",
+      "complete": "Complete"
+    },
+    "loading": "Loading project details...",
+    "backToProjects": "Back to Projects",
+    "projectDescription": "Project Description",
+    "projectDetails": "Project Details",
+    "keyFeatures": "Key Features",
+    "sustainabilityFeatures": "Sustainability Features",
+    "projectTimeline": "Project Timeline",
+    "projectTeam": "Project Team",
+    "interestedProject": "Interested in this project?",
+    "contactUsForMore": "Contact us for more information about this project or similar developments.",
+    "contactUs": "Contact Us",
+    "completionProgress": "Completion Progress",
+    "projectedCompletion": "Projected Completion",
+    "location": "Location",
+    "totalArea": "Total Area",
+    "floors": "Floors",
+    "above": "above",
+    "below": "below",
+    "parking": "Parking",
+    "spaces": "spaces",
+    "certification": "Certification",
+    "budget": "Budget",
+    "projectSize": "Project Size",
+    "capacity": "Capacity",
+    "duration": "Duration",
+    "status": {
+      "label": "Status",
+      "planned": "Planned",
+      "in-progress": "In Progress",
+      "complete": "Completed"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "features": "Features",
+      "timeline": "Timeline",
+      "team": "Team"
+    },
+    "team": {
+      "architect": "Architect",
+      "contractor": "Main Contractor",
+      "engineers": "Engineering Team"
+    },
+    "timeline": {
+      "planning": "Planning Phase",
+      "foundation": "Foundation Work",
+      "structure": "Structural Work",
+      "facade": "Facade Installation",
+      "interiors": "Interior Work",
+      "landscaping": "Landscaping",
+      "completion": "Project Completion"
+    }
+  },
+  "projectDetail": {
+    "details": "Project Details",
+    "category": "Category",
+    "status": "Status",
+    "featured": "Featured Project",
+    "location": "Location"
+  },
+  "ourHolding": {
+    "hero": {
+      "title": "Our Holding",
+      "subtitle": "Building Excellence Since 1995"
+    },
+    "overview": {
+      "title": "Company Overview",
+      "description": "BuildHolding is a leading construction company with over 25 years of experience in delivering high-quality projects across Bulgaria and Eastern Europe. We specialize in commercial, residential, and industrial construction with a focus on sustainability and innovation."
+    },
+    "values": {
+      "title": "Our Core Values",
+      "integrity": "Integrity",
+      "integrityDesc": "We conduct business with honesty, transparency and ethical practices in all our dealings.",
+      "quality": "Quality",
+      "qualityDesc": "We are committed to excellence and the highest standards in every project we undertake.",
+      "innovation": "Innovation",
+      "innovationDesc": "We continuously seek new technologies and methods to improve our construction processes.",
+      "sustainability": "Sustainability",
+      "sustainabilityDesc": "We build with the future in mind, minimizing environmental impact and maximizing efficiency."
+    },
+    "stats": {
+      "title": "Company Statistics",
+      "years": "Years of Experience",
+      "projects": "Completed Projects",
+      "clients": "Satisfied Clients",
+      "employees": "Professional Team Members"
+    },
+    "tabs": {
+      "mission": {
+        "title": "Our Mission",
+        "content": "At BuildHolding, our mission is to create innovative, sustainable structures that stand the test of time. We believe in combining cutting-edge technology with traditional craftsmanship to deliver exceptional value to our clients and communities."
+      },
+      "who": {
+        "title": "Who We Are",
+        "content": "Founded in 1995, BuildHolding has grown from a small local contractor to one of the region's most respected construction firms. Our team of 200+ professionals brings expertise across residential, commercial, and industrial projects."
+      },
+      "team": {
+        "title": "Our Team",
+        "content": "Our diverse team includes architects, engineers, project managers, and skilled tradespeople. Led by our founder and CEO, Ivan Petrov, we foster a culture of excellence, innovation, and continuous learning."
+      },
+      "equipment": {
+        "title": "Equipment",
+        "content": "BuildHolding owns and maintains a comprehensive fleet of modern construction equipment, from heavy machinery to specialized tools. This allows us to control quality, timelines, and costs across all our projects.",
+        "items": {
+          "crane": "Tower Crane",
+          "excavator": "Excavator",
+          "bulldozer": "Bulldozer",
+          "mixer": "Concrete Mixer",
+          "loader": "Front Loader",
+          "forklift": "Forklift"
+        }
+      },
+      "quality": {
+        "title": "Quality Standards",
+        "content": "We adhere to ISO 9001 quality management standards and employ rigorous quality control processes throughout each project. Our commitment to excellence has earned us multiple industry certifications and awards.",
+        "certifications": {
+          "iso9001": "ISO 9001:2015",
+          "iso14001": "ISO 14001:2015",
+          "ohsas18001": "OHSAS 18001",
+          "leed": "LEED Certification"
+        },
+        "viewCertificate": "View Certificate"
+      },
+      "timeline": {
+        "title": "Timeline",
+        "content": "Over our 30-year history, BuildHolding has completed more than 500 projects valued at over €1.5 billion. From our humble beginnings to our current position as an industry leader, our growth reflects our commitment to excellence.",
+        "milestones": {
+          "founding": {
+            "year": "1995",
+            "title": "Company Founded",
+            "description": "Started as a small residential contractor in Sofia"
+          },
+          "commercial": {
+            "year": "2005",
+            "title": "Expansion to Commercial",
+            "description": "Began taking on commercial construction projects"
+          },
+          "international": {
+            "year": "2010",
+            "title": "International Projects",
+            "description": "First projects outside Bulgaria"
+          },
+          "holding": {
+            "year": "2020",
+            "title": "Holding Formation",
+            "description": "Reorganized as BuildHolding with multiple subsidiaries"
+          }
+        }
+      },
+      "partners": {
+        "title": "Partners",
+        "content": "We maintain strategic partnerships with leading material suppliers, technology providers, and specialized subcontractors. These collaborations allow us to offer integrated solutions and stay at the forefront of industry innovations.",
+        "types": {
+          "supplier": "Material Supplier",
+          "technology": "Technology Provider",
+          "equipment": "Equipment Provider"
+        }
+      },
+      "clients": {
+        "title": "Clients",
+        "content": "Our client portfolio spans government agencies, multinational corporations, developers, and private investors. We are proud that over 75% of our business comes from repeat clients and referrals - a testament to our commitment to client satisfaction.",
+        "types": {
+          "government": "Government",
+          "corporate": "Corporate",
+          "retail": "Retail",
+          "financial": "Financial"
+        }
+      }
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch with our team",
+    "contactUs": "Contact Us",
+    "openingHours": "Working Hours",
+    "followUs": "Follow Us",
+    "form": {
+      "title": "Send us a Message",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "subject": "Subject",
+      "message": "Message",
+      "send": "Send Message",
+      "success": "Message Sent Successfully!",
+      "successMessage": "Thank you for contacting us. We'll get back to you as soon as possible."
+    },
+    "location": {
+      "title": "Our Location",
+      "address": "123 Construction Blvd, Sofia, Bulgaria",
+      "phone": "+359 2 123 4567",
+      "email": "info@buildholding.com",
+      "hours": "Mon-Fri: 9:00 - 18:00"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "welcomeTitle": "Welcome to BuildHolding Admin",
+      "totalProjects": "Total Projects",
+      "completedProjects": "Completed Projects",
+      "inProgressProjects": "In Progress",
+      "plannedProjects": "Planned",
+      "recentProjects": "Recent Projects"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "projects": "Projects",
+      "home": "Home Page",
+      "partners": "Partners",
+      "clients": "Clients",
+      "timeline": "Timeline",
+      "media": "Media",
+      "content": "Content",
+      "logout": "Logout",
+      "profile": "Profile"
+    },
+    "projects": {
+      "addNew": "Add New Project"
+    }
+  },
+  "footer": {
+    "description": "Excellence in construction since 1995. Building the future with integrity, innovation, and quality craftsmanship.",
+    "navigation": "Navigate",
+    "projects": "Our Projects",
+    "contact": "Contact",
+    "rights": "All rights reserved."
+  },
+  "common": {
+    "status": {
+      "planned": "Planned",
+      "inProgress": "In Progress",
+      "complete": "Complete"
+    },
+    "categories": {
+      "commercial": "Commercial",
+      "residential": "Residential",
+      "hospitality": "Hospitality",
+      "industrial": "Industrial"
+    },
+    "loading": "Loading...",
+    "notFound": "Not Found",
+    "sofia": "Sofia, Bulgaria"
+  },
+  "language": {
+    "english": "English",
+    "bulgarian": "Bulgarian",
+    "russian": "Russian"
+  }
+}

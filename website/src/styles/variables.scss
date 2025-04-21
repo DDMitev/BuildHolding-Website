@@ -1,0 +1,36 @@
+// Brand Colors
+$primary: #0056b3;    // Deep Blue
+$primary-dark: #00417f; // Darker Blue
+$secondary: #ff7722;  // Vibrant Orange
+$accent: #ff9944;     // Light Orange
+$dark: #1a3a5f;       // Dark Blue
+$light: #f8f9fa;      // Off White
+$white: #ffffff;      // Pure White
+
+// Typography
+$font-family-sans-serif: 'Roboto', 'Segoe UI', sans-serif;
+$font-family-headings: 'Montserrat', 'Segoe UI', sans-serif;
+
+// Spacing
+$spacer: 1rem;
+$section-padding: 4rem 0;
+$container-padding: 2rem;
+
+// Borders & Shadows
+$border-radius: 0.25rem;
+$border-radius-lg: 0.5rem;
+$box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+$box-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+
+// Transitions
+$transition-base: all 0.3s ease-in-out;
+$transition-hover: all 0.2s ease;
+
+// Z-index
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
