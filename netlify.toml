@@ -1,16 +1,4 @@
-# Complete Netlify configuration
 [build]
-  base = "/"  # Root of repository
-  publish = "website/build"  # Where the built files are
-  command = "cd website && npm install && npm run build"  # Build command with explicit npm install
-
-[build.environment]
-  NODE_VERSION = "16.14.0"  # Safe Node.js version
-  NETLIFY_USE_YARN = "false"  # Force npm
-  CI = "false"  # Don't treat warnings as errors
-  
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true  # Important! Override any other rules
+  base = "website"
+  publish = "build"
+  command = "CI= npm run build"
