@@ -1,5 +1,30 @@
 // Hardcoded projects data that will work reliably
 
+// Helper function to ensure all image URLs use absolute paths for production
+const ensureAbsoluteUrls = (projects) => {
+  return projects.map(project => {
+    // Fix main image URL if it exists
+    if (project.mainImageUrl && !project.mainImageUrl.startsWith('http')) {
+      project.mainImageUrl = `https://via.placeholder.com/800x600?text=${encodeURIComponent(project.title?.en || 'BuildHolding Project')}`;
+    }
+    
+    // Fix all images in the images array
+    if (project.images && Array.isArray(project.images)) {
+      project.images = project.images.map(img => {
+        if (img.url && !img.url.startsWith('http')) {
+          return {
+            ...img,
+            url: `https://via.placeholder.com/800x600?text=${encodeURIComponent(project.title?.en || 'BuildHolding Project')}`
+          };
+        }
+        return img;
+      });
+    }
+    
+    return project;
+  });
+};
+
 // Original hardcoded projects - to be used as fallback or defaults
 const originalProjects = [
   {
@@ -32,13 +57,24 @@ const originalProjects = [
     status: "in-progress",
     featured: true,
     completionPercentage: 70,
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-    thumbnail: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80",
-      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80",
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+    mainImageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+        alt: { en: "Office Building Exterior", bg: "Екстериор на офис сграда", ru: "Экстерьер офисного здания" }
+      },
+      {
+        url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80",
+        alt: { en: "Office Interior", bg: "Интериор на офис", ru: "Интерьер офиса" }
+      },
+      {
+        url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80",
+        alt: { en: "Office Meeting Room", bg: "Зала за съвещания в офис", ru: "Конференц-зал в офисе" }
+      },
+      {
+        url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+        alt: { en: "Office Workspace", bg: "Работно място в офис", ru: "Рабочее место в офисе" }
+      }
     ],
     location: {
       address: { 
@@ -248,16 +284,15 @@ const originalProjects = [
     status: "complete",
     featured: true,
     completionPercentage: 100,
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-    thumbnail: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    gallery: [
-      { 
+    mainImageUrl: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    images: [
+      {
         url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-        alt: { en: "Sunset Complex Exterior", bg: "Екстериор на комплекс Сънсет", ru: "Экстерьер комплекса Сансет" }
+        alt: { en: "Residential Complex Exterior", bg: "Екстериор на жилищен комплекс", ru: "Экстерьер жилого комплекса" }
       },
-      { 
+      {
         url: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-        alt: { en: "Interior Living Space", bg: "Вътрешно жилищно пространство", ru: "Внутреннее жилое пространство" }
+        alt: { en: "Apartment Interior", bg: "Интериор на апартамент", ru: "Интерьер апартамента" }
       }
     ],
     location: {
@@ -342,14 +377,13 @@ const originalProjects = [
     status: "in-progress",
     featured: true,
     completionPercentage: 60,
-    image: "https://images.unsplash.com/photo-1613665813446-82a78b7127aa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-    thumbnail: "https://images.unsplash.com/photo-1613665813446-82a78b7127aa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    gallery: [
-      { 
+    mainImageUrl: "https://images.unsplash.com/photo-1613665813446-82a78b7127aa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    images: [
+      {
         url: "https://images.unsplash.com/photo-1613665813446-82a78b7127aa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
         alt: { en: "Solar Panel Array", bg: "Масив от слънчеви панели", ru: "Массив солнечных панелей" }
       },
-      { 
+      {
         url: "https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1472&q=80",
         alt: { en: "Control Station", bg: "Контролна станция", ru: "Пункт управления" }
       }
@@ -431,10 +465,9 @@ const originalProjects = [
     status: "planned",
     featured: false,
     completionPercentage: 15,
-    image: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-    thumbnail: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    gallery: [
-      { 
+    mainImageUrl: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    images: [
+      {
         url: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
         alt: { en: "Water Treatment Plant", bg: "Станция за пречистване на води", ru: "Очистные сооружения" }
       }
@@ -516,14 +549,13 @@ const originalProjects = [
     status: "complete",
     featured: false,
     completionPercentage: 100,
-    image: "https://images.unsplash.com/photo-1586528116493-a029325540fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-    thumbnail: "https://images.unsplash.com/photo-1586528116493-a029325540fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-    gallery: [
-      { 
+    mainImageUrl: "https://images.unsplash.com/photo-1586528116493-a029325540fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    images: [
+      {
         url: "https://images.unsplash.com/photo-1586528116493-a029325540fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
         alt: { en: "Logistics Center Exterior", bg: "Екстериор на логистичен център", ru: "Экстерьер логистического центра" }
       },
-      { 
+      {
         url: "https://images.unsplash.com/photo-1557761469-f29c6e201784?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80",
         alt: { en: "Warehouse Interior", bg: "Интериор на склад", ru: "Интерьер склада" }
       }
@@ -598,5 +630,5 @@ const originalProjects = [
   }
 ];
 
-// Export the original projects directly
-export default originalProjects;
+// Export the projects with absolute URLs to ensure they work in production
+export default ensureAbsoluteUrls(originalProjects);
