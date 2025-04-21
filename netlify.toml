@@ -2,3 +2,13 @@
   base = "website/"
   publish = "build/"
   command = "npm run build"
+
+[build.environment]
+  REACT_APP_BASE_URL = "/"
+  CI = "false"
+  NODE_VERSION = "18.x"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
