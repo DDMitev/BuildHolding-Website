@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authService } from '../../services/api.service';
+import LanguageSelector from '../../components/LanguageSelector';
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -75,6 +76,13 @@ const LoginPage = () => {
                   <p className="text-muted">{t('admin.login.subtitle')}</p>
                 </div>
                 
+                {/* Language Selector */}
+                <div className="mb-3 text-center">
+                  <div className="d-inline-block">
+                    <LanguageSelector vertical={false} />
+                  </div>
+                </div>
+                
                 {error && (
                   <div className="alert alert-danger" role="alert">
                     {error}
@@ -129,6 +137,13 @@ const LoginPage = () => {
                     )}
                   </button>
                 </form>
+
+                {/* Display default credentials hint */}
+                <div className="mt-3 text-center">
+                  <small className="text-muted">
+                    Default: admin@buildholding.com / admin123
+                  </small>
+                </div>
               </div>
             </div>
           </div>

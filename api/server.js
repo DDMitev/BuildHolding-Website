@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
 const dotenv = require('dotenv');
+const User = require('./models/user.model');
 
 // Load environment variables
 dotenv.config();
@@ -25,8 +26,32 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log('Connected to MongoDB');
+    
+    // Ensure default admin exists
+    try {
+      const userCount = await User.countDocuments();
+      if (userCount === 0) {
+        console.log('No users found. Creating default admin user...');
+        
+        // Create default admin user
+        const defaultAdmin = new User({
+          email: 'admin@buildholding.com',
+          password: 'admin123',
+          displayName: 'Admin',
+          role: 'admin'
+        });
+        
+        await defaultAdmin.save();
+        console.log('Default admin user created successfully!');
+        console.log('Email: admin@buildholding.com');
+        console.log('Password: admin123');
+        console.log('IMPORTANT: Please change this password after first login!');
+      }
+    } catch (error) {
+      console.error('Error ensuring admin user:', error);
+    }
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err);

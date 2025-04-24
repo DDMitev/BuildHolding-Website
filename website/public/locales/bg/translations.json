@@ -205,6 +205,41 @@
       "hours": "Пон-Пет: 9:00 - 18:00"
     }
   },
+  "admin": {
+    "dashboard": {
+      "title": "Админ Панел",
+      "welcomeTitle": "Добре дошли в BuildHolding Админ",
+      "totalProjects": "Общо Проекти",
+      "completedProjects": "Завършени Проекти",
+      "inProgressProjects": "В Процес",
+      "plannedProjects": "Планирани",
+      "recentProjects": "Последни Проекти"
+    },
+    "login": {
+      "title": "Вход за Админ",
+      "subtitle": "Въведете вашите данни за достъп до админ панела",
+      "email": "Имейл",
+      "password": "Парола",
+      "signIn": "ВХОД",
+      "signingIn": "Влизане...",
+      "invalidCredentials": "Невалидни данни. Моля, опитайте отново."
+    },
+    "nav": {
+      "dashboard": "Табло",
+      "projects": "Проекти",
+      "home": "Начална Страница",
+      "partners": "Партньори",
+      "clients": "Клиенти",
+      "timeline": "Времева Линия",
+      "media": "Медия",
+      "content": "Съдържание",
+      "logout": "Изход",
+      "profile": "Профил"
+    },
+    "projects": {
+      "addNew": "Добави Нов Проект"
+    }
+  },
   "footer": {
     "description": "Съвършенство в строителството от 1995. Изграждаме бъдещето с почтеност, иновации и качествено майсторство.",
     "navigation": "Навигация",
