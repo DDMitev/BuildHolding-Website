@@ -124,17 +124,30 @@ const LoginPage = () => {
                   
                   <button
                     type="submit"
-                    className="btn btn-primary w-100 py-2"
+                    className="btn btn-primary w-100"
                     disabled={loading}
-                    style={{ height: '48px' }}
+                    style={{ 
+                      height: '48px',
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '16px',
+                      transition: 'all 0.3s ease'
+                    }}
                   >
                     {loading ? (
-                      <div className="d-flex align-items-center justify-content-center" style={{ width: '100%' }}>
-                        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        <span className="ms-2">{t('admin.login.signingIn')}</span>
-                      </div>
+                      <>
+                        <span 
+                          className="spinner-border spinner-border-sm" 
+                          role="status" 
+                          aria-hidden="true"
+                          style={{ marginRight: '8px' }}
+                        ></span>
+                        <span>{t('admin.login.signingIn')}</span>
+                      </>
                     ) : (
-                      t('admin.login.signIn')
+                      <span>{t('admin.login.signIn')}</span>
                     )}
                   </button>
                 </form>
