@@ -25,32 +25,39 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/buildholding')
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/buildholding', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
   .then(async () => {
     console.log('Connected to MongoDB');
     
     // Ensure default admin exists
     try {
-      const userCount = await User.countDocuments();
-      if (userCount === 0) {
-        console.log('No users found. Creating default admin user...');
+      // First check if the admin user with that email already exists
+      const existingAdmin = await User.findOne({ email: 'admin@buildholding.com' });
+      
+      if (existingAdmin) {
+        console.log('Default admin user already exists.');
+      } else {
+        console.log('Creating default admin user...');
         
-        // Create default admin user
+        // Create default admin user with explicit password
         const defaultAdmin = new User({
           email: 'admin@buildholding.com',
-          password: 'admin123',
+          password: 'admin123', // Will be hashed by the model's pre-save hook
           displayName: 'Admin',
           role: 'admin'
         });
         
-        await defaultAdmin.save();
+        const savedAdmin = await defaultAdmin.save();
         console.log('Default admin user created successfully!');
         console.log('Email: admin@buildholding.com');
         console.log('Password: admin123');
         console.log('IMPORTANT: Please change this password after first login!');
       }
     } catch (error) {
-      console.error('Error ensuring admin user:', error);
+      console.error('Error creating admin user:', error);
     }
   })
   .catch((err) => {
