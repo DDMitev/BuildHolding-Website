@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/buildholding')
   .then(async () => {
     console.log('Connected to MongoDB');
     

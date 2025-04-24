@@ -128,10 +128,10 @@ const LoginPage = () => {
                     disabled={loading}
                   >
                     {loading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        {t('admin.login.signingIn')}
-                      </>
+                      <div className="d-flex align-items-center justify-content-center">
+                        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span className="ms-2">{t('admin.login.signingIn')}</span>
+                      </div>
                     ) : (
                       t('admin.login.signIn')
                     )}
