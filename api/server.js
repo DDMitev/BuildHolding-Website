@@ -17,6 +17,9 @@ if (!process.env.JWT_SECRET) {
   console.log('WARNING: Using default JWT_SECRET. Set JWT_SECRET in .env for production.');
 }
 
+// Prepare for production deployment
+const IN_PROD = process.env.NODE_ENV === 'production';
+
 // Create Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,21 +27,33 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(helmet()); // Security headers
 app.use(morgan('dev')); // HTTP request logger
-app.use(cors()); // Enable CORS
+app.use(cors({
+  // When in production, only allow the frontend domain and localhost
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://buildholding-website.onrender.com', 'http://localhost:3000'] 
+    : '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  credentials: true
+})); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // Static files (uploads)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Connect to MongoDB
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/buildholding';
+// Set up MongoDB connection string
+// For production, we'll use MongoDB Atlas or other cloud MongoDB provider
+// For development, we'll use local MongoDB
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/buildholding';
 
-console.log('Attempting to connect to MongoDB at:', MONGO_URI);
+console.log('Attempting to connect to MongoDB at:', IN_PROD ? 'MongoDB Cloud (URI hidden)' : MONGO_URI);
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  // These settings help with cloud MongoDB connections
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
 })
   .then(async () => {
     console.log('Connected to MongoDB successfully');

@@ -1,8 +1,30 @@
 import axios from 'axios';
 
+/**
+ * API Service Configuration
+ * 
+ * This file configures the connection between your frontend and backend API.
+ */
+
+// Determine API URL based on environment variables or use a fallback
+let apiUrl = process.env.REACT_APP_API_URL;
+
+// Fallback logic for different environments
+if (!apiUrl) {
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    apiUrl = 'http://localhost:5000/api';
+    console.log('Using local API:', apiUrl);
+  } else {
+    // When deployed on Render, the REACT_APP_API_URL will be set via environment variables
+    // This is a fallback just in case
+    apiUrl = 'https://buildholding-api.onrender.com/api';
+    console.log('Using production API:', apiUrl);
+  }
+}
+
 // Create axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
