@@ -36,6 +36,23 @@ const LoginPage = () => {
     e.preventDefault();
     setError(null);
     
+    // Demo login for Netlify deployment
+    if (credentials.email === 'admin@buildholding.com' && credentials.password === 'admin123') {
+      // Store mock token and user data
+      localStorage.setItem('token', 'demo-token-for-testing');
+      localStorage.setItem('user', JSON.stringify({
+        id: '1',
+        email: 'admin@buildholding.com',
+        displayName: 'Admin',
+        role: 'admin'
+      }));
+      
+      // Redirect to admin dashboard
+      navigate('/admin/dashboard');
+      return;
+    }
+    
+    // Regular API login attempt
     try {
       setLoading(true);
       const response = await authService.login(credentials);
