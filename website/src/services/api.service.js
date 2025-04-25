@@ -15,10 +15,9 @@ if (!apiUrl) {
     apiUrl = 'http://localhost:5000/api';
     console.log('Using local API:', apiUrl);
   } else {
-    // When deployed on Render, the REACT_APP_API_URL will be set via environment variables
-    // This is a fallback just in case
-    apiUrl = 'https://buildholding-api.onrender.com/api';
-    console.log('Using production API:', apiUrl);
+    // When deployed on Netlify, connect to Railway backend
+    apiUrl = 'https://buildholding-api.up.railway.app/api';
+    console.log('Using Railway API:', apiUrl);
   }
 }
 

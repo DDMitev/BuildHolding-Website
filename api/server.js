@@ -19,22 +19,26 @@ if (!process.env.JWT_SECRET) {
 
 // Prepare for production deployment
 const IN_PROD = process.env.NODE_ENV === 'production';
+// Get the PORT from environment (Railway sets this automatically)
+const PORT = process.env.PORT || 5000;
 
 // Create Express app
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet()); // Security headers
 app.use(morgan('dev')); // HTTP request logger
+
+// Configure CORS to allow requests from your frontend
 app.use(cors({
-  // When in production, only allow the frontend domain and localhost
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://buildholding-website.onrender.com', 'http://localhost:3000'] 
+  // When in production, allow requests from Netlify
+  origin: IN_PROD 
+    ? ['https://buildholding-website.netlify.app', 'http://localhost:3000']
     : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true
-})); // Enable CORS
+}));
+
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
