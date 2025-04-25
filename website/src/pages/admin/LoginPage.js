@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { authService } from '../../services/api.service';
-import LanguageSelector from '../../components/LanguageSelector';
+import { signIn } from '../../firebase/authService';
+import { useFirebase } from '../../firebase/FirebaseContext';
 
 const LoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useFirebase();
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -16,13 +17,10 @@ const LoginPage = () => {
   
   // Check if user is already logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
-    
-    if (token && user) {
+    if (user) {
       navigate('/admin/dashboard');
     }
-  }, [navigate]);
+  }, [navigate, user]);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,44 +34,21 @@ const LoginPage = () => {
     e.preventDefault();
     setError(null);
     
-    // Demo login for Netlify deployment
-    if (credentials.email === 'admin@buildholding.com' && credentials.password === 'admin123') {
-      // Store mock token and user data
-      localStorage.setItem('token', 'demo-token-for-testing');
-      localStorage.setItem('user', JSON.stringify({
-        id: '1',
-        email: 'admin@buildholding.com',
-        displayName: 'Admin',
-        role: 'admin'
-      }));
-      
-      // Redirect to admin dashboard
-      navigate('/admin/dashboard');
-      return;
-    }
-    
-    // Regular API login attempt
     try {
       setLoading(true);
-      const response = await authService.login(credentials);
+      const { user, error } = await signIn(credentials.email, credentials.password);
       
-      if (response.data) {
-        // Store token and user data in localStorage
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify({
-          id: response.data.id,
-          email: response.data.email,
-          displayName: response.data.displayName,
-          role: response.data.role
-        }));
-        
-        // Redirect to admin dashboard
+      if (user) {
+        // Successful login will be handled by the Firebase context
+        // which will trigger the useEffect above and redirect
         navigate('/admin/dashboard');
+      } else if (error) {
+        setError(error);
       }
     } catch (err) {
       console.error('Login error:', err);
       setError(
-        err.response?.data?.message || 
+        err.message || 
         'Invalid credentials. Please try again.'
       );
     } finally {
@@ -91,13 +66,6 @@ const LoginPage = () => {
                 <div className="text-center mb-4">
                   <h2 className="fw-bold text-primary">{t('admin.login.title')}</h2>
                   <p className="text-muted">{t('admin.login.subtitle')}</p>
-                </div>
-                
-                {/* Language Selector */}
-                <div className="mb-3 text-center">
-                  <div className="d-inline-block">
-                    <LanguageSelector vertical={false} />
-                  </div>
                 </div>
                 
                 {error && (
@@ -141,40 +109,19 @@ const LoginPage = () => {
                   
                   <button
                     type="submit"
-                    className="btn btn-primary w-100"
+                    className="btn btn-primary w-100 py-2"
                     disabled={loading}
-                    style={{ 
-                      height: '48px',
-                      position: 'relative',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease'
-                    }}
                   >
                     {loading ? (
                       <>
-                        <span 
-                          className="spinner-border spinner-border-sm" 
-                          role="status" 
-                          aria-hidden="true"
-                          style={{ marginRight: '8px' }}
-                        ></span>
-                        <span>{t('admin.login.signingIn')}</span>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        {t('admin.login.signingIn')}
                       </>
                     ) : (
-                      <span>{t('admin.login.signIn')}</span>
+                      t('admin.login.signIn')
                     )}
                   </button>
                 </form>
-
-                {/* Display default credentials hint */}
-                <div className="mt-3 text-center">
-                  <small className="text-muted">
-                    Default: admin@buildholding.com / admin123
-                  </small>
-                </div>
               </div>
             </div>
           </div>

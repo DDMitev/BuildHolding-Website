@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import HeroSection from '../components/Common/HeroSection';
-import hardcodedProjects from '../data/hardcoded-projects';
-import { projectService } from '../services/api.service';
+import { getProjects } from '../firebase/projectService';
 
 const ProjectCard = ({ project }) => {
   const { t } = useTranslation();
@@ -81,7 +80,7 @@ const ProjectCard = ({ project }) => {
                 : project.description?.en)
             }
           </p>
-          <Link to={`/projects/${project._id || project.id}`} className="btn btn-sm btn-outline-primary">
+          <Link to={`/projects/${project.id}`} className="btn btn-sm btn-outline-primary">
             {t('home.featured.viewDetails')}
           </Link>
         </div>
@@ -105,26 +104,24 @@ const ProjectsPage = () => {
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        // Attempt to fetch projects from API
-        const response = await projectService.getAll();
+        // Fetch projects from Firebase
+        const projectsData = await getProjects();
         
-        if (response.data && response.data.data && response.data.data.length > 0) {
-          console.log("API Projects:", response.data.data);
-          setProjects(response.data.data);
-          setFilteredProjects(response.data.data);
+        if (projectsData && projectsData.length > 0) {
+          console.log("Firebase Projects:", projectsData);
+          setProjects(projectsData);
+          setFilteredProjects(projectsData);
         } else {
-          // Fallback to hardcoded data if API returns empty data
-          console.log("Falling back to hardcoded projects");
-          setProjects(hardcodedProjects);
-          setFilteredProjects(hardcodedProjects);
+          console.error("No projects found in Firebase");
+          setError("No projects found");
+          setProjects([]);
+          setFilteredProjects([]);
         }
       } catch (err) {
-        console.error("Error fetching projects:", err);
-        setError(err);
-        
-        // Fallback to hardcoded data on error
-        setProjects(hardcodedProjects);
-        setFilteredProjects(hardcodedProjects);
+        console.error("Error fetching projects from Firebase:", err);
+        setError(err.message || "Failed to load projects");
+        setProjects([]);
+        setFilteredProjects([]);
       } finally {
         setLoading(false);
       }
@@ -202,31 +199,30 @@ const ProjectsPage = () => {
                 value={filter.category}
                 onChange={handleFilterChange}
               >
-                {getCategories().map((category, index) => (
-                  <option key={index} value={category.toLowerCase()}>
-                    {category === 'all' ? t('projects.filters.allCategories') : category}
+                <option value="all">{t('projects.filters.allCategories')}</option>
+                {getCategories().filter(cat => cat !== 'all').map(category => (
+                  <option key={category} value={category}>
+                    {category}
                   </option>
                 ))}
               </select>
             </div>
-            
             <div className="col-md-6 col-lg-3 mb-3">
               <label className="form-label">{t('projects.filters.status')}</label>
               <select 
-                className="form-select" 
-                name="status" 
+                className="form-select"
+                name="status"
                 value={filter.status}
                 onChange={handleFilterChange}
               >
-                {getStatuses().map((status, index) => (
-                  <option key={index} value={status.toLowerCase()}>
-                    {status === 'all' 
-                      ? t('projects.filters.allStatuses') 
-                      : status === 'in-progress' 
-                        ? t('projects.filters.inProgress')
-                        : status === 'planned'
-                          ? t('projects.filters.planned')
-                          : t('projects.filters.complete')
+                <option value="all">{t('projects.filters.allStatuses')}</option>
+                {getStatuses().filter(st => st !== 'all').map(status => (
+                  <option key={status} value={status}>
+                    {status === 'in-progress' 
+                      ? t('projects.filters.inProgress')
+                      : status === 'planned'
+                        ? t('projects.filters.planned')
+                        : t('projects.filters.complete')
                     }
                   </option>
                 ))}
@@ -234,24 +230,33 @@ const ProjectsPage = () => {
             </div>
           </div>
           
-          {/* Project Grid */}
+          {/* Projects */}
           <div className="row">
             {loading ? (
               <div className="col-12 text-center py-5">
-                <div className="page-loader">
-                  <div className="logo-pulse-container">
-                    <div className="logo-pulse">BH</div>
-                  </div>
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
                 </div>
               </div>
-            ) : filteredProjects && filteredProjects.length > 0 ? (
-              filteredProjects.map((project, index) => (
-                <ProjectCard key={`project-${project._id || project.id || index}`} project={project} />
-              ))
-            ) : (
-              <div className="col-12 text-center py-5">
-                <p>No projects found matching the selected filters.</p>
+            ) : error ? (
+              <div className="col-12">
+                <div className="alert alert-danger" role="alert">
+                  {t('projects.error')}: {error}
+                </div>
               </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="col-12">
+                <div className="alert alert-info" role="alert">
+                  {t('projects.noResults')}
+                </div>
+              </div>
+            ) : (
+              filteredProjects.map(project => (
+                <ProjectCard 
+                  key={project.id || project._id} 
+                  project={project} 
+                />
+              ))
             )}
           </div>
         </div>

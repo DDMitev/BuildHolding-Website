@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useFirebase } from '../../firebase/FirebaseContext';
+import { signOutUser } from '../../firebase/authService';
 
 /**
  * AdminLayout component
@@ -10,28 +12,16 @@ const AdminLayout = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState(null);
+  const { user, userRole, isAdmin, loading } = useFirebase();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
-  // Check authentication
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = JSON.parse(localStorage.getItem('user') || 'null');
-    
-    if (!token || !userData) {
-      // Redirect to login if not authenticated
-      navigate('/admin/login');
-      return;
-    }
-    
-    setUser(userData);
-  }, [navigate]);
+  // Check authentication - handled by the ProtectedRoute in App.js
+  // Firebase context already provides user information
   
-  const handleLogout = () => {
-    // Clear auth data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    // Redirect to login
+  const handleLogout = async () => {
+    // Sign out using Firebase auth
+    await signOutUser();
+    // Redirect to login - this will happen automatically due to the ProtectedRoute
     navigate('/admin/login');
   };
   
@@ -43,7 +33,7 @@ const AdminLayout = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
   
-  if (!user) {
+  if (loading) {
     return (
       <div className="container py-5">
         <div className="text-center">
@@ -264,7 +254,7 @@ const AdminLayout = () => {
                 style={{ backgroundColor: '#ffffff !important', color: '#6c757d !important' }}
               >
                 <i className="fas fa-user-circle me-2"></i>
-                <span>{user.displayName || user.email || 'Admin User'}</span>
+                <span>{user?.displayName || user?.email || 'Admin User'}</span>
               </button>
               <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li>
