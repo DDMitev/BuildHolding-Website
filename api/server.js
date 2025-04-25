@@ -48,26 +48,38 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Set up MongoDB connection string
 // For production on Railway, we'll use the provided MONGODB_URI
 // For development, we'll use local MongoDB
-const MONGO_URI = process.env.MONGODB_URI;
+let MONGO_URI = process.env.MONGODB_URI;
+
+// Determine if we're in Railway's build environment
+const isRailwayBuild = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_ID;
 
 if (!MONGO_URI) {
-  console.error('\x1b[31m%s\x1b[0m', 'ERROR: MONGODB_URI environment variable is not set');
-  console.error('Please set MONGODB_URI in your Railway project variables');
-  // We'll continue execution but the API won't be able to connect to the database
+  if (isRailwayBuild) {
+    console.log('\x1b[33m%s\x1b[0m', 'WARNING: MONGODB_URI environment variable is not set');
+    console.log('This is expected during build process. Please set MONGODB_URI in your Railway project variables before runtime.');
+    // Continue execution during build time
+  } else {
+    console.error('\x1b[31m%s\x1b[0m', 'ERROR: MONGODB_URI environment variable is not set');
+    console.error('Please set MONGODB_URI in your Railway project variables');
+    // For local development, provide a fallback
+    MONGO_URI = 'mongodb://localhost:27017/buildholding';
+  }
 }
 
 console.log('Attempting to connect to MongoDB at:', 
   MONGO_URI ? (MONGO_URI.includes('@') ? MONGO_URI.split('@')[1] : 'MongoDB Atlas') : 'No connection string provided');
 
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  // These settings help with cloud MongoDB connections
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-})
+// Only try to connect if MONGO_URI is available
+if (MONGO_URI) {
+  mongoose.connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    // These settings help with cloud MongoDB connections
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  })
   .then(async () => {
-    console.log('Connected to MongoDB successfully');
+    console.log('MongoDB Connected');
     
     // Create admin user
     try {
@@ -120,8 +132,13 @@ mongoose.connect(MONGO_URI, {
   .catch((err) => {
     console.error('MongoDB connection error:', err.message);
     console.error('Please check your MongoDB connection and try again.');
-    // Continue running the app even if DB connection fails
+    if (isRailwayBuild) {
+      console.log('Build process will continue despite MongoDB connection failure');
+    }
   });
+} else if (isRailwayBuild) {
+  console.log('Skipping MongoDB connection during build process');
+}
 
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));

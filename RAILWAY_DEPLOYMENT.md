@@ -15,39 +15,37 @@ This guide walks you through deploying the BuildHolding Website backend API on R
 3. Once created, you'll see your new MongoDB project
 4. Click on "MongoDB" in your project dashboard
 5. Go to the "Connect" tab
-6. Note down the MongoDB connection string (we'll need this later)
+6. Copy the MongoDB connection string (we'll need this for Step 3)
 
 ## Step 3: Deploy Your Backend API
 
-1. From your Railway dashboard, click "New Project"
+1. From your Railway dashboard, click "New Project" again
 2. Select "Deploy from GitHub repo"
 3. Choose your "BuildHolding-Website" repository
 4. In the setup screen:
    - Railway will detect your project's structure using the railway.json file
    - Set the root directory to `/` (the root of your repository)
 
-5. Add environment variables by clicking on "Variables":
-   - `NODE_ENV`: `production`
-   - `JWT_SECRET`: (generate a random string or use the default)
-   - `MONGODB_URI`: (paste the MongoDB connection string from Step 2)
+5. **First, deploy without environment variables:**
+   - Complete the initial deployment without adding variables
+   - This will likely fail with connection errors (this is expected)
    
-   > **IMPORTANT**: Make sure the MONGODB_URI variable is set correctly. It should be the complete MongoDB connection string provided by Railway in Step 2.
+6. **After initial deployment, add environment variables:**
+   - Click on your project, then go to "Variables" tab
+   - Add the following variables:
+     - `NODE_ENV`: `production`
+     - `JWT_SECRET`: (generate a random string or use `buildholdingsecret123`)
+     - `MONGODB_URI`: (paste the complete MongoDB connection string from Step 2)
+   - Click "Deploy" to redeploy with the environment variables
 
-6. Disable the automatic setup script for the first deployment:
-   - Under "Settings" in your project
-   - Find "Build Command" and temporarily change it to `echo "Skipping build for now"`
-   - Save the changes
-   - After the first deployment succeeds, change it back to `cd api && npm install`
-
-7. Click "Deploy" to start the deployment process
-   - Railway will deploy your API without running the setup script yet
-
-8. After deployment, check the logs for any errors
-   - If you see connection errors, verify your MONGODB_URI variable is set correctly
+7. **Check the deployment logs:**
+   - Go to the "Deployments" tab and click on the latest deployment
+   - Review the logs to ensure everything is working correctly
+   - You should see "MongoDB Connected" in the logs
 
 ## Step 4: Set Up URL and Check Deployment
 
-1. After deployment, go to the "Settings" tab
+1. After successful deployment, go to the "Settings" tab
 2. Under "Domains", click "Generate Domain"
 3. You'll get a public URL like: `https://buildholding-api.up.railway.app`
 4. Visit `https://buildholding-api.up.railway.app/api/healthcheck` to verify your API is running
@@ -64,7 +62,7 @@ This guide walks you through deploying the BuildHolding Website backend API on R
 
 ## Step 6: Create Admin User
 
-1. Visit `https://buildholding-api.up.railway.app/api/create-admin` in your browser
+1. Visit `https://buildholding-api.up.railway.app/api/debug/create-admin` in your browser
    - This will create the default admin user account
    - You should see a success message in JSON format
 
@@ -75,15 +73,27 @@ This guide walks you through deploying the BuildHolding Website backend API on R
 3. Log in with:
    - Email: `admin@buildholding.com`
    - Password: `admin123`
+4. You should now be able to access the admin dashboard
+
+## Troubleshooting
+
+### MongoDB Connection Issues
+- Double-check that your `MONGODB_URI` is correctly copied from Railway's MongoDB connection tab
+- Make sure there are no extra spaces or characters in the connection string
+- The connection string should look like: `mongodb://user:password@host:port/database`
+
+### Railway Build Failures
+- Check the deployment logs for specific error messages
+- If you see "Error: MONGODB_URI environment variable not set", go to the Variables tab and add it
+- Remember that each new deployment will rerun the setup scripts
+
+### Frontend API Connection Issues
+- Open your browser developer tools (F12) and check the Console and Network tabs
+- Verify the API requests are going to your Railway backend URL, not localhost
+- If needed, clear your browser cache or use incognito mode to test
 
 ## Maintenance
 
 - Railway's free tier gives you 5 project hours per month (enough for testing)
-- Your API will sleep when not in use and wake up when requested
 - For production use, consider upgrading to a paid plan ($5-10/month)
-
-## Troubleshooting
-
-- If login fails, check your browser console for API connection errors
-- Verify that your API is running by visiting the healthcheck endpoint
-- Ensure CORS settings in your API allow requests from your Netlify domain
+- Your application's data is stored in the MongoDB database on Railway

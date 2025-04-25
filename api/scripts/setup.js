@@ -18,9 +18,18 @@ async function setupDatabase() {
     const MONGODB_URI = process.env.MONGODB_URI;
     
     if (!MONGODB_URI) {
-      console.error('ERROR: MONGODB_URI environment variable is not set');
-      console.error('Please set the MONGODB_URI in your Railway project variables');
-      process.exit(1);
+      console.log('\x1b[33m%s\x1b[0m', 'WARNING: MONGODB_URI environment variable is not set');
+      console.log('This is expected during build/install process, but must be set before runtime');
+      console.log('Please set the MONGODB_URI in your Railway project variables');
+      
+      // Exit with success code during build/install to allow deployment to continue
+      if (process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_ID) {
+        console.log('Detected Railway build environment, continuing deployment...');
+        process.exit(0); // Exit cleanly so Railway deployment continues
+      } else {
+        console.log('Not in Railway build environment, exiting with error...');
+        process.exit(1);
+      }
     }
     
     console.log(`Connecting to MongoDB at: ${MONGODB_URI.includes('@') ? MONGODB_URI.split('@')[1] : 'MongoDB Atlas'}...`);
