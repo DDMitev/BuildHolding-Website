@@ -1,5 +1,5 @@
 /**
- * Render Setup Script
+ * Railway Setup Script
  * 
  * This script runs during deployment to set up initial data,
  * including the admin user.
@@ -13,16 +13,27 @@ async function setupDatabase() {
   try {
     console.log('Starting setup process...');
     
-    // Connect to MongoDB
-    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/buildholding';
-    console.log(`Connecting to MongoDB at: ${MONGODB_URI.substring(0, 20)}...`);
+    // Connect to MongoDB - use the MongoDB connection string from Railway
+    // The MONGODB_URI environment variable should be set in Railway dashboard
+    const MONGODB_URI = process.env.MONGODB_URI;
     
+    if (!MONGODB_URI) {
+      console.error('ERROR: MONGODB_URI environment variable is not set');
+      console.error('Please set the MONGODB_URI in your Railway project variables');
+      process.exit(1);
+    }
+    
+    console.log(`Connecting to MongoDB at: ${MONGODB_URI.includes('@') ? MONGODB_URI.split('@')[1] : 'MongoDB Atlas'}...`);
+    
+    // Connect with options specifically for Railway
     await mongoose.connect(MONGODB_URI, {
       useNewUrlParser: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000
     });
     
-    console.log('Connected to MongoDB');
+    console.log('Connected to MongoDB successfully');
     
     // Check if we need to create users collection
     const collections = await mongoose.connection.db.listCollections().toArray();

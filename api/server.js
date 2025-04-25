@@ -46,11 +46,18 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Set up MongoDB connection string
-// For production, we'll use MongoDB Atlas or other cloud MongoDB provider
+// For production on Railway, we'll use the provided MONGODB_URI
 // For development, we'll use local MongoDB
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/buildholding';
+const MONGO_URI = process.env.MONGODB_URI;
 
-console.log('Attempting to connect to MongoDB at:', IN_PROD ? 'MongoDB Cloud (URI hidden)' : MONGO_URI);
+if (!MONGO_URI) {
+  console.error('\x1b[31m%s\x1b[0m', 'ERROR: MONGODB_URI environment variable is not set');
+  console.error('Please set MONGODB_URI in your Railway project variables');
+  // We'll continue execution but the API won't be able to connect to the database
+}
+
+console.log('Attempting to connect to MongoDB at:', 
+  MONGO_URI ? (MONGO_URI.includes('@') ? MONGO_URI.split('@')[1] : 'MongoDB Atlas') : 'No connection string provided');
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,

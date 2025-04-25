@@ -30,9 +30,20 @@ This guide walks you through deploying the BuildHolding Website backend API on R
    - `NODE_ENV`: `production`
    - `JWT_SECRET`: (generate a random string or use the default)
    - `MONGODB_URI`: (paste the MongoDB connection string from Step 2)
+   
+   > **IMPORTANT**: Make sure the MONGODB_URI variable is set correctly. It should be the complete MongoDB connection string provided by Railway in Step 2.
 
-6. Click "Deploy" to start the deployment process
-   - Railway will automatically build and deploy your API
+6. Disable the automatic setup script for the first deployment:
+   - Under "Settings" in your project
+   - Find "Build Command" and temporarily change it to `echo "Skipping build for now"`
+   - Save the changes
+   - After the first deployment succeeds, change it back to `cd api && npm install`
+
+7. Click "Deploy" to start the deployment process
+   - Railway will deploy your API without running the setup script yet
+
+8. After deployment, check the logs for any errors
+   - If you see connection errors, verify your MONGODB_URI variable is set correctly
 
 ## Step 4: Set Up URL and Check Deployment
 
