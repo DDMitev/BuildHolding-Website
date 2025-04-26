@@ -251,131 +251,56 @@ const OurHoldingPage = () => {
         {/* Company Values Section */}
         <div className="row mb-5">
           <div className="col-12 text-center mb-4">
-            <h2 className="section-title" style={{color: '#212529 !important'}}>
+            <h2 className="section-title" style={{color: '#212529'}}>
               {getTranslatedContent('values', 'title', t('ourHolding.values.title'))}
             </h2>
           </div>
           
-          <div className="row">
-            <div className="col-md-6">
-              {pageContent?.values?.items ? (
-                // Render values from Firebase data
-                <div className="row">
-                  {pageContent.values.items.map((value, index) => (
-                    <div key={index} className="col-md-6 mb-4">
-                      <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-                        <div className="card-body text-center p-4">
-                          <div className="value-icon mb-3">
-                            <i className={value.icon || "fas fa-star"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
-                          </div>
-                          <h4 className="value-title" style={{color: '#212529 !important'}}>
-                            {value.title?.[t('language')] || value.title?.en || `Value ${index + 1}`}
-                          </h4>
-                          <p className="card-text" style={{color: '#6c757d !important'}}>
-                            {value.description?.[t('language')] || value.description?.en || "Description not available"}
-                          </p>
-                        </div>
+          <div className="row justify-content-center">
+            {pageContent?.values?.items && pageContent.values.items.length > 0 ? (
+              // Render values from Firebase data
+              pageContent.values.items.map((value, index) => (
+                <div key={index} className="col-md-3 mb-4">
+                  <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff'}}>
+                    <div className="card-body text-center p-4">
+                      <div className="value-icon mb-3">
+                        <i className={value.icon || "fas fa-star"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                // Render existing UI for backward compatibility
-                <div className="row">
-                  <div className="col-md-6 mb-4">
-                    <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-                      <div className="card-body text-center p-4">
-                        <div className="value-icon mb-3">
-                          <i className={getTranslatedContent('values', 'integrity.icon', "fas fa-handshake")} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
-                        </div>
-                        <h4 className="value-title" style={{color: '#212529 !important'}}>
-                          {getTranslatedContent('values', 'integrity.title', t('ourHolding.values.integrity'))}
-                        </h4>
-                        <p className="card-text" style={{color: '#6c757d !important'}}>
-                          {getTranslatedContent('values', 'integrity.description', t('ourHolding.values.integrityDesc'))}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="col-md-6 mb-4">
-                    <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-                      <div className="card-body text-center p-4">
-                        <div className="value-icon mb-3">
-                          <i className={getTranslatedContent('values', 'quality.icon', "fas fa-award")} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
-                        </div>
-                        <h4 className="value-title" style={{color: '#212529 !important'}}>
-                          {getTranslatedContent('values', 'quality.title', t('ourHolding.values.quality'))}
-                        </h4>
-                        <p className="card-text" style={{color: '#6c757d !important'}}>
-                          {getTranslatedContent('values', 'quality.description', t('ourHolding.values.qualityDesc'))}
-                        </p>
-                      </div>
+                      <h4 className="value-title" style={{color: '#212529'}}>
+                        {value.title?.[t('language')] || value.title?.en || `Value ${index + 1}`}
+                      </h4>
+                      <p className="card-text" style={{color: '#6c757d'}}>
+                        {value.description?.[t('language')] || value.description?.en || "Description not available"}
+                      </p>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-
-            <div className="col-md-6">
-              {pageContent?.values?.items && pageContent.values.items.length > 2 ? (
-                // Render values from Firebase data if we have enough values
-                <div className="row">
-                  {pageContent.values.items.slice(2, 4).map((value, index) => (
-                    <div key={index + 2} className="col-md-6 mb-4">
-                      <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-                        <div className="card-body text-center p-4">
-                          <div className="value-icon mb-3">
-                            <i className={value.icon || "fas fa-star"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
-                          </div>
-                          <h4 className="value-title" style={{color: '#212529 !important'}}>
-                            {value.title?.[t('language')] || value.title?.en || `Value ${index + 3}`}
-                          </h4>
-                          <p className="card-text" style={{color: '#6c757d !important'}}>
-                            {value.description?.[t('language')] || value.description?.en || "Description not available"}
-                          </p>
-                        </div>
+              ))
+            ) : (
+              // Render existing UI for backward compatibility
+              [
+                { id: 'integrity', icon: 'fas fa-handshake', title: t('ourHolding.values.integrity'), description: t('ourHolding.values.integrityDesc') },
+                { id: 'quality', icon: 'fas fa-award', title: t('ourHolding.values.quality'), description: t('ourHolding.values.qualityDesc') },
+                { id: 'innovation', icon: 'fas fa-lightbulb', title: t('ourHolding.values.innovation'), description: t('ourHolding.values.innovationDesc') },
+                { id: 'sustainability', icon: 'fas fa-leaf', title: t('ourHolding.values.sustainability'), description: t('ourHolding.values.sustainabilityDesc') }
+              ].map((value, index) => (
+                <div key={index} className="col-md-3 mb-4">
+                  <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff'}}>
+                    <div className="card-body text-center p-4">
+                      <div className="value-icon mb-3">
+                        <i className={value.icon} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                // Render existing UI for backward compatibility
-                <div className="row">
-                  <div className="col-md-6 mb-4">
-                    <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-                      <div className="card-body text-center p-4">
-                        <div className="value-icon mb-3">
-                          <i className={getTranslatedContent('values', 'innovation.icon', "fas fa-lightbulb")} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
-                        </div>
-                        <h4 className="value-title" style={{color: '#212529 !important'}}>
-                          {getTranslatedContent('values', 'innovation.title', t('ourHolding.values.innovation'))}
-                        </h4>
-                        <p className="card-text" style={{color: '#6c757d !important'}}>
-                          {getTranslatedContent('values', 'innovation.description', t('ourHolding.values.innovationDesc'))}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="col-md-6 mb-4">
-                    <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-                      <div className="card-body text-center p-4">
-                        <div className="value-icon mb-3">
-                          <i className={getTranslatedContent('values', 'sustainability.icon', "fas fa-leaf")} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
-                        </div>
-                        <h4 className="value-title" style={{color: '#212529 !important'}}>
-                          {getTranslatedContent('values', 'sustainability.title', t('ourHolding.values.sustainability'))}
-                        </h4>
-                        <p className="card-text" style={{color: '#6c757d !important'}}>
-                          {getTranslatedContent('values', 'sustainability.description', t('ourHolding.values.sustainabilityDesc'))}
-                        </p>
-                      </div>
+                      <h4 className="value-title" style={{color: '#212529'}}>
+                        {value.title}
+                      </h4>
+                      <p className="card-text" style={{color: '#6c757d'}}>
+                        {value.description}
+                      </p>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+              ))
+            )}
           </div>
         </div>
         
@@ -516,13 +441,13 @@ const OurHoldingPage = () => {
             <div className="row">
               <div className="col-md-6 mb-4">
                 <h2>
-                  {pageContent?.tabs?.approach?.title?.[t('language')] || 
-                   pageContent?.tabs?.approach?.title?.en || 
+                  {pageContent?.tabs?.who?.title?.[t('language')] || 
+                   pageContent?.tabs?.who?.title?.en || 
                    t('ourHolding.tabs.who.title')}
                 </h2>
                 <p className="lead">
-                  {pageContent?.tabs?.approach?.content?.[t('language')] || 
-                   pageContent?.tabs?.approach?.content?.en || 
+                  {pageContent?.tabs?.who?.content?.[t('language')] || 
+                   pageContent?.tabs?.who?.content?.en || 
                    t('ourHolding.tabs.who.content')}
                 </p>
               </div>
@@ -545,13 +470,13 @@ const OurHoldingPage = () => {
             <div className="row">
               <div className="col-md-6 mb-4">
                 <h2>
-                  {pageContent?.tabs?.sustainability?.title?.[t('language')] || 
-                   pageContent?.tabs?.sustainability?.title?.en || 
+                  {pageContent?.tabs?.team?.title?.[t('language')] || 
+                   pageContent?.tabs?.team?.title?.en || 
                    t('ourHolding.tabs.team.title')}
                 </h2>
                 <p className="lead">
-                  {pageContent?.tabs?.sustainability?.content?.[t('language')] || 
-                   pageContent?.tabs?.sustainability?.content?.en || 
+                  {pageContent?.tabs?.team?.content?.[t('language')] || 
+                   pageContent?.tabs?.team?.content?.en || 
                    t('ourHolding.tabs.team.content')}
                 </p>
               </div>

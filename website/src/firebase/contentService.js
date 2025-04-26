@@ -533,28 +533,88 @@ export const defaultHoldingContent = {
         ru: "Миссия BuildHolding - предоставлять исключительные строительные и девелоперские услуги через наше семейство специализированных компаний, уделяя особое внимание инновациям, качеству и удовлетворенности клиентов. Мы стремимся преобразить построенную среду, соблюдая самые высокие стандарты этичной деловой практики."
       }
     },
-    approach: {
+    who: {
       title: {
-        en: "Our Approach",
-        bg: "Нашият подход",
-        ru: "Наш подход"
+        en: "Who We Are",
+        bg: "Кои сме ние",
+        ru: "Кто мы"
       },
       content: {
-        en: "At BuildHolding, we take an integrated approach to construction and development. By bringing together specialized expertise from across our family of companies, we can address all aspects of a project - from initial concept and design through to construction, finishing, and maintenance. This holistic approach ensures seamless coordination, cost efficiency, and exceptional results.",
-        bg: "В BuildHolding прилагаме интегриран подход към строителството и развитието. Като обединяваме специализиран опит от цялото ни семейство от компании, можем да адресираме всички аспекти на един проект - от първоначалната концепция и дизайн до строителството, довършителните работи и поддръжката. Този холистичен подход осигурява безпроблемна координация, ефективност на разходите и изключителни резултати.",
-        ru: "В BuildHolding мы применяем комплексный подход к строительству и девелопменту. Объединяя специализированный опыт нашего семейства компаний, мы можем охватить все аспекты проекта - от первоначальной концепции и дизайна до строительства, отделки и обслуживания. Этот целостный подход обеспечивает бесперебойную координацию, экономическую эффективность и исключительные результаты."
+        en: "At BuildHolding, we are a family of specialized construction and real estate companies working together to create extraordinary buildings and spaces. With decades of combined experience, our team brings expertise in every aspect of the construction process, from initial planning to project delivery and beyond.",
+        bg: "В BuildHolding сме семейство от специализирани строителни компании и компании за недвижими имоти, които работят заедно за създаването на изключителни сгради и пространства. С десетилетия комбиниран опит, нашият екип внася експертиза във всеки аспект на строителния процес, от първоначалното планиране до предаването на проекта и след това.",
+        ru: "В BuildHolding мы представляем семью специализированных строительных компаний и компаний по недвижимости, работающих вместе для создания выдающихся зданий и пространств. Имея многолетний совокупный опыт, наша команда привносит знания во все аспекты строительного процесса, от первоначального планирования до сдачи проекта и далее."
       }
     },
-    sustainability: {
+    team: {
       title: {
-        en: "Sustainability",
-        bg: "Устойчивост",
-        ru: "Устойчивость"
+        en: "Our Team",
+        bg: "Нашият екип",
+        ru: "Наша команда"
       },
       content: {
-        en: "Sustainability is at the core of BuildHolding's business philosophy. We are committed to minimizing the environmental impact of our projects through innovative green building practices, energy-efficient designs, and responsible resource management. Our sustainability initiatives extend beyond our projects to our corporate operations and community engagement programs.",
-        bg: "Устойчивостта е в основата на бизнес философията на BuildHolding. Ние сме ангажирани да минимизираме въздействието върху околната среда на нашите проекти чрез иновативни практики за зелено строителство, енергийно ефективни дизайни и отговорно управление на ресурсите. Нашите инициативи за устойчивост се простират отвъд нашите проекти до нашите корпоративни операции и програми за ангажиране на общността.",
-        ru: "Устойчивость лежит в основе бизнес-философии BuildHolding. Мы стремимся минимизировать воздействие наших проектов на окружающую среду с помощью инновационных практик зеленого строительства, энергоэффективных проектов и ответственного управления ресурсами. Наши инициативы в области устойчивого развития выходят за рамки наших проектов и охватывают корпоративные операции и программы взаимодействия с сообществом."
+        en: "BuildHolding brings together the best talent in the construction industry. Our diverse team of professionals includes architects, engineers, project managers, craftsmen, and specialists who share a common commitment to excellence. Together, we collaborate to deliver exceptional results on every project.",
+        bg: "BuildHolding събира най-добрите таланти в строителната индустрия. Нашият разнообразен екип от професионалисти включва архитекти, инженери, проектни мениджъри, занаятчии и специалисти, които споделят общ ангажимент към съвършенството. Заедно си сътрудничим, за да постигнем изключителни резултати при всеки проект.",
+        ru: "BuildHolding объединяет лучшие таланты в строительной отрасли. Наша разнообразная команда профессионалов включает архитекторов, инженеров, руководителей проектов, мастеров и специалистов, которых объединяет общая приверженность совершенству. Вместе мы сотрудничаем, чтобы достичь исключительных результатов в каждом проекте."
+      }
+    },
+    equipment: {
+      title: {
+        en: "Equipment & Technology",
+        bg: "Оборудване и технологии",
+        ru: "Оборудование и технологии"
+      },
+      description: {
+        en: "BuildHolding companies utilize state-of-the-art equipment and cutting-edge technology to ensure precision, efficiency, and safety across all our construction projects.",
+        bg: "Компаниите на BuildHolding използват най-съвременно оборудване и авангардни технологии, за да осигурят прецизност, ефективност и безопасност във всички наши строителни проекти.",
+        ru: "Компании BuildHolding используют современное оборудование и передовые технологии для обеспечения точности, эффективности и безопасности во всех наших строительных проектах."
+      }
+    },
+    quality: {
+      title: {
+        en: "Quality Standards",
+        bg: "Стандарти за качество",
+        ru: "Стандарты качества"
+      },
+      description: {
+        en: "We maintain rigorous quality control processes and adhere to international and local standards across all our operations. Our companies have earned numerous certifications that reflect our commitment to excellence.",
+        bg: "Поддържаме строги процеси за контрол на качеството и се придържаме към международните и местните стандарти във всички наши операции. Нашите компании са получили множество сертификати, които отразяват нашия ангажимент към съвършенството.",
+        ru: "Мы поддерживаем строгие процессы контроля качества и придерживаемся международных и местных стандартов во всех наших операциях. Наши компании получили многочисленные сертификаты, отражающие нашу приверженность совершенству."
+      }
+    },
+    timeline: {
+      title: {
+        en: "Company Timeline",
+        bg: "История на компанията",
+        ru: "История компании"
+      },
+      description: {
+        en: "Follow our journey from a small construction contractor to a diversified holding with multiple specialized businesses operating across Southeast Europe.",
+        bg: "Проследете нашето пътуване от малък строителен изпълнител до диверсифициран холдинг с множество специализирани бизнеси, работещи в Югоизточна Европа.",
+        ru: "Проследите наш путь от небольшого строительного подрядчика до диверсифицированного холдинга с несколькими специализированными предприятиями, работающими по всей Юго-Восточной Европе."
+      }
+    },
+    partners: {
+      title: {
+        en: "Our Partners",
+        bg: "Нашите партньори",
+        ru: "Наши партнеры"
+      },
+      description: {
+        en: "BuildHolding collaborates with leading suppliers, technology providers, and industry partners to deliver exceptional value and innovation on our projects.",
+        bg: "BuildHolding си сътрудничи с водещи доставчици, технологични доставчици и индустриални партньори, за да предостави изключителна стойност и иновации в нашите проекти.",
+        ru: "BuildHolding сотрудничает с ведущими поставщиками, технологическими провайдерами и отраслевыми партнерами, чтобы обеспечить исключительную ценность и инновации в наших проектах."
+      }
+    },
+    clients: {
+      title: {
+        en: "Our Clients",
+        bg: "Нашите клиенти",
+        ru: "Наши клиенты"
+      },
+      description: {
+        en: "We are proud to have worked with a diverse range of clients across the public and private sectors. Our client relationships are built on trust, transparency, and consistently delivering high-quality results.",
+        bg: "Гордеем се, че сме работили с разнообразен кръг от клиенти от публичния и частния сектор. Нашите взаимоотношения с клиентите се основават на доверие, прозрачност и постоянно предоставяне на висококачествени резултати.",
+        ru: "Мы гордимся тем, что работали с различными клиентами из государственного и частного секторов. Наши отношения с клиентами строятся на доверии, прозрачности и стабильном предоставлении высококачественных результатов."
       }
     }
   },
