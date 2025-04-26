@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getProjects, getProjectById, updateProject as firebaseUpdateProject, addProject, resetToDefaults } from '../firebase/projectService';
+import projectService from '../firebase/projectService';
 // Keep localStorage for fallback
 import * as projectStorage from '../services/projectStorage';
 
@@ -121,7 +121,7 @@ const ProjectAdmin = () => {
       setLoading(true);
       try {
         // Load from Firebase or fallback to localStorage
-        let storedProjects = await getProjects();
+        let storedProjects = await projectService.getProjects();
         console.log("Raw projects from Firebase:", JSON.stringify(storedProjects));
         
         // Normalize data structure for gallery
@@ -272,7 +272,7 @@ const ProjectAdmin = () => {
     try {
       setLoading(true);
       // Get fresh data from Firebase
-      const projectData = await getProjectById(project.id);
+      const projectData = await projectService.getProjectById(project.id);
       
       if (projectData) {
         console.log("Loaded project from Firebase:", projectData);
@@ -443,18 +443,18 @@ const ProjectAdmin = () => {
       const dataToSave = prepareDataForSave();
       
       // Save the updated project data to Firebase
-      const success = await firebaseUpdateProject(formData.id, dataToSave);
+      const success = await projectService.updateProject(formData.id, dataToSave);
       
       if (success) {
         setSaveSuccess(true);
         setSaveError(null);
         
         // Force the page to refresh local data from Firebase
-        const updatedProjects = await getProjects();
+        const updatedProjects = await projectService.getProjects();
         setProjects(deepCopy(updatedProjects));
         
         // Update current project with the latest data
-        const updatedProject = await getProjectById(formData.id);
+        const updatedProject = await projectService.getProjectById(formData.id);
         if (updatedProject) {
           setCurrentProject(deepCopy(updatedProject));
         }
@@ -2163,21 +2163,21 @@ const ProjectAdmin = () => {
       };
       
       // Add the project to Firebase and get the new ID
-      const newId = await addProject(newProject);
+      const newId = await projectService.addProject(newProject);
       
       if (newId) {
         // Fetch the newly created project to ensure we have the correct data
-        const createdProject = await getProjectById(newId);
+        const createdProject = await projectService.getProjectById(newId);
         if (createdProject) {
           setCurrentProject(deepCopy(createdProject));
           setFormData(deepCopy(createdProject));
           
           // Refresh the projects list
-          const updatedProjects = await getProjects();
+          const updatedProjects = await projectService.getProjects();
           setProjects(deepCopy(updatedProjects));
           
           // Update current project with the latest data
-          const updatedProject = await getProjectById(formData.id);
+          const updatedProject = await projectService.getProjectById(formData.id);
           if (updatedProject) {
             setCurrentProject(deepCopy(updatedProject));
           }
@@ -2204,10 +2204,10 @@ const ProjectAdmin = () => {
       try {
         setLoading(true);
         // Reset projects in Firebase
-        const success = await resetToDefaults();
+        const success = await projectService.resetToDefaults();
         if (success) {
           // Get fresh projects after reset
-          const defaultProjects = await getProjects();
+          const defaultProjects = await projectService.getProjects();
           setProjects(deepCopy(defaultProjects));
           setCurrentProject(null);
           setEditMode(false);
@@ -2390,17 +2390,17 @@ const ProjectAdmin = () => {
                         if (projectToSave.image) delete projectToSave.image;
                         
                         // Save to Firebase
-                        const success = await firebaseUpdateProject(projectToSave.id, projectToSave);
+                        const success = await projectService.updateProject(projectToSave.id, projectToSave);
                         
                         if (success) {
                           // Get fresh data from Firebase
-                          const updatedProject = await getProjectById(projectToSave.id);
+                          const updatedProject = await projectService.getProjectById(projectToSave.id);
                           if (updatedProject) {
                             setCurrentProject(deepCopy(updatedProject));
                             setFormData(deepCopy(updatedProject));
                             
                             // Refresh the projects list
-                            const refreshedProjects = await getProjects();
+                            const refreshedProjects = await projectService.getProjects();
                             setProjects(deepCopy(refreshedProjects));
                           }
                           
@@ -2653,5 +2653,3 @@ const ProjectAdmin = () => {
 };
 
 export default ProjectAdmin;
-"// Updated on $(date)" 
-"// Updated on $(date)" 

@@ -27,7 +27,7 @@ const PROJECTS_COLLECTION = 'projects';
  * Initialize projects in Firestore if they don't exist
  * @returns {Promise<boolean>} Success status
  */
-export const initializeFirestoreProjects = async () => {
+const initializeFirestoreProjects = async () => {
   try {
     // Check if projects collection has any documents
     const querySnapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
@@ -145,7 +145,7 @@ const sanitizeProjectData = (project, preferredLang = 'en') => {
  * Get all projects from Firestore
  * @returns {Promise<Array>} Array of project objects
  */
-export const getProjects = async () => {
+const getProjects = async () => {
   try {
     // Initialize projects if they don't exist
     await initializeFirestoreProjects();
@@ -227,7 +227,7 @@ export const getProjects = async () => {
  * @param {string} id - Project ID
  * @returns {Promise<Object|null>} Project object or null if not found
  */
-export const getProjectById = async (id) => {
+const getProjectById = async (id) => {
   try {
     const docRef = doc(db, PROJECTS_COLLECTION, id);
     const docSnap = await getDoc(docRef);
@@ -251,7 +251,7 @@ export const getProjectById = async (id) => {
  * @param {Object} project - Project data without ID
  * @returns {Promise<string|null>} New project ID or null if failed
  */
-export const addProject = async (project) => {
+const addProject = async (project) => {
   try {
     // Create a new document reference with auto-generated ID
     const newDocRef = doc(collection(db, PROJECTS_COLLECTION));
@@ -278,7 +278,7 @@ export const addProject = async (project) => {
  * @param {Object} updatedProject - New project data
  * @returns {Promise<boolean>} Success status
  */
-export const updateProject = async (id, updatedProject) => {
+const updateProject = async (id, updatedProject) => {
   try {
     const docRef = doc(db, PROJECTS_COLLECTION, id);
     
@@ -308,7 +308,7 @@ export const updateProject = async (id, updatedProject) => {
  * @param {string} id - Project ID to delete
  * @returns {Promise<boolean>} Success status
  */
-export const deleteProject = async (id) => {
+const deleteProject = async (id) => {
   try {
     const docRef = doc(db, PROJECTS_COLLECTION, id);
     await deleteDoc(docRef);
@@ -326,7 +326,7 @@ export const deleteProject = async (id) => {
  * @param {string} category - Category to filter by
  * @returns {Promise<Array>} Array of matching project objects
  */
-export const getProjectsByCategory = async (category) => {
+const getProjectsByCategory = async (category) => {
   try {
     const q = query(
       collection(db, PROJECTS_COLLECTION),
@@ -351,7 +351,7 @@ export const getProjectsByCategory = async (category) => {
  * Reset to hardcoded defaults
  * @returns {Promise<boolean>} Success status
  */
-export const resetToDefaults = async () => {
+const resetToDefaults = async () => {
   try {
     // First delete all existing projects
     const querySnapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
@@ -371,7 +371,8 @@ export const resetToDefaults = async () => {
   }
 };
 
-export default {
+// Create a named export object that includes all service functions
+const projectService = {
   getProjects,
   getProjectById,
   addProject,
@@ -381,5 +382,6 @@ export default {
   resetToDefaults,
   initializeFirestoreProjects
 };
-"// Updated on $(date)" 
-"// Updated on $(date)" 
+
+// Export the object
+export default projectService;

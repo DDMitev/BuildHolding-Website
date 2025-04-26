@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Container, Row, Col, Button, Spinner, Tab, Nav, Tabs, ListGroup, Badge } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { Tab, Nav } from 'react-bootstrap';
-import Slider from 'react-slick';
+import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import projectService from '../firebase/projectService';
 import { getProjectById } from '../firebase/projectService';
 import '../styles/ProjectDetail.css';
 
@@ -88,7 +89,7 @@ const ProjectDetailPage = () => {
         setLoading(true);
         
         // Fetch project from Firebase
-        const projectData = await getProjectById(id);
+        const projectData = await projectService.getProjectById(id);
         
         if (projectData) {
           console.log("Found project in Firebase:", projectData);

@@ -1,26 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Nav, Tab, Form, Button, Alert } from 'react-bootstrap';
+import { Card, Nav, Tab, Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import * as contactContentService from '../../services/contactContentService';
+import { getContactContent, saveContactContent, defaultContactContent } from '../../firebase/contentService';
 
 const ContactAdmin = () => {
   const { t, i18n } = useTranslation();
   const languages = ['en', 'bg', 'ru'];
   const currentLanguage = i18n.language || 'en';
   
-  const [formData, setFormData] = useState(contactContentService.getContactContent());
+  const [formData, setFormData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [activeTab, setActiveTab] = useState('hero');
   
-  const handleSave = () => {
+  // Load content from Firebase
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        setLoading(true);
+        const content = await getContactContent();
+        setFormData(content);
+        console.log("Contact admin content loaded from Firebase:", content);
+      } catch (err) {
+        console.error("Error loading contact content from Firebase:", err);
+        // Use default content as fallback
+        setFormData(defaultContactContent);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadContent();
+  }, []);
+  
+  const handleSave = async () => {
     try {
       setSaving(true);
       setSaveSuccess(false);
       setSaveError(null);
       
-      const success = contactContentService.saveContactContent(formData);
+      const success = await saveContactContent(formData);
       
       if (success) {
         setSaveSuccess(true);
@@ -39,7 +60,7 @@ const ContactAdmin = () => {
   
   const handleReset = () => {
     if (window.confirm('Are you sure you want to reset all Contact page content to default values? This cannot be undone.')) {
-      setFormData(contactContentService.default.defaultContactContent);
+      setFormData({...defaultContactContent});
     }
   };
   
@@ -114,317 +135,337 @@ const ContactAdmin = () => {
     }));
   };
   
-  // Render multilingual input group
-  const renderMultilingualInput = (section, field, label, type = 'text') => (
-    <Form.Group className="mb-3">
-      <Form.Label className="fw-bold">{label}</Form.Label>
-      {languages.map(lang => (
-        <div key={lang} className="input-group mb-2">
-          <span className="input-group-text" style={{backgroundColor: "#e9ecef !important", color: "#333333 !important"}}>
-            {lang.toUpperCase()}
-          </span>
-          {type === 'textarea' ? (
-            <Form.Control
-              as="textarea"
-              rows={3}
-              value={formData[section][field][lang] || ''}
-              onChange={(e) => handleMultilingualChange(section, field, lang, e.target.value)}
-              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-            />
-          ) : (
-            <Form.Control
-              type={type}
-              value={formData[section][field][lang] || ''}
-              onChange={(e) => handleMultilingualChange(section, field, lang, e.target.value)}
-              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-            />
-          )}
-        </div>
-      ))}
-    </Form.Group>
-  );
+  // Render multilingual input fields
+  const renderMultilingualInput = (section, field, label, type = 'text') => {
+    if (!formData || !formData[section]) return null;
+    
+    return (
+      <Form.Group className="mb-3">
+        <Form.Label className="fw-bold">{label}</Form.Label>
+        {languages.map(lang => (
+          <InputGroup key={lang} className="mb-2">
+            <InputGroup.Text style={{width: '50px'}}>{lang.toUpperCase()}</InputGroup.Text>
+            {type === 'textarea' ? (
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData[section][field]?.[lang] || ''}
+                onChange={(e) => handleMultilingualChange(section, field, lang, e.target.value)}
+                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+              />
+            ) : (
+              <Form.Control
+                type={type}
+                value={formData[section][field]?.[lang] || ''}
+                onChange={(e) => handleMultilingualChange(section, field, lang, e.target.value)}
+                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+              />
+            )}
+          </InputGroup>
+        ))}
+      </Form.Group>
+    );
+  };
   
   // Render nested multilingual input
-  const renderNestedMultilingualInput = (section, nestedSection, field, label, type = 'text') => (
-    <Form.Group className="mb-3">
-      <Form.Label className="fw-bold">{label}</Form.Label>
-      {languages.map(lang => (
-        <div key={lang} className="input-group mb-2">
-          <span className="input-group-text" style={{backgroundColor: "#e9ecef !important", color: "#333333 !important"}}>
-            {lang.toUpperCase()}
-          </span>
-          {type === 'textarea' ? (
-            <Form.Control
-              as="textarea"
-              rows={3}
-              value={formData[section][nestedSection][field][lang] || ''}
-              onChange={(e) => handleNestedMultilingualChange(section, nestedSection, field, lang, e.target.value)}
-              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-            />
-          ) : (
-            <Form.Control
-              type={type}
-              value={formData[section][nestedSection][field][lang] || ''}
-              onChange={(e) => handleNestedMultilingualChange(section, nestedSection, field, lang, e.target.value)}
-              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-            />
-          )}
-        </div>
-      ))}
-    </Form.Group>
-  );
+  const renderNestedMultilingualInput = (section, nestedSection, field, label, type = 'text') => {
+    if (!formData || !formData[section] || !formData[section][nestedSection]) return null;
+    
+    return (
+      <Form.Group className="mb-3">
+        <Form.Label className="fw-bold">{label}</Form.Label>
+        {languages.map(lang => (
+          <InputGroup key={lang} className="mb-2">
+            <InputGroup.Text style={{width: '50px'}}>{lang.toUpperCase()}</InputGroup.Text>
+            {type === 'textarea' ? (
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData[section][nestedSection][field]?.[lang] || ''}
+                onChange={(e) => handleNestedMultilingualChange(section, nestedSection, field, lang, e.target.value)}
+                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+              />
+            ) : (
+              <Form.Control
+                type={type}
+                value={formData[section][nestedSection][field]?.[lang] || ''}
+                onChange={(e) => handleNestedMultilingualChange(section, nestedSection, field, lang, e.target.value)}
+                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+              />
+            )}
+          </InputGroup>
+        ))}
+      </Form.Group>
+    );
+  };
   
   // Render Hero Section Editor
-  const renderHeroEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-image me-2"></i> Hero Section
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('hero', 'title', 'Hero Title')}
-        {renderMultilingualInput('hero', 'subtitle', 'Hero Subtitle')}
-        
-        <Form.Group className="mb-3">
-          <Form.Label className="fw-bold">Background Image URL</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.hero.backgroundImage || ''}
-            onChange={(e) => handleInputChange('hero', 'backgroundImage', e.target.value)}
-            placeholder="e.g. /images/hero-contact.jpg"
-            style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-          />
-          {formData.hero.backgroundImage && (
-            <div className="mt-2">
-              <img 
-                src={formData.hero.backgroundImage} 
-                alt="Hero Background Preview"
-                className="img-thumbnail" 
-                style={{maxHeight: '100px'}}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
-                }}
-              />
-            </div>
-          )}
-        </Form.Group>
-      </Card.Body>
-    </Card>
-  );
+  const renderHeroEditor = () => {
+    if (!formData || !formData.hero) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-image me-2"></i> Hero Section
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('hero', 'title', 'Hero Title')}
+          {renderMultilingualInput('hero', 'subtitle', 'Hero Subtitle')}
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">Background Image URL</Form.Label>
+            <Form.Control
+              type="text"
+              value={formData.hero.backgroundImage || ''}
+              onChange={(e) => handleInputChange('hero', 'backgroundImage', e.target.value)}
+              placeholder="e.g. /images/hero-contact.jpg"
+              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+            />
+            {formData.hero.backgroundImage && (
+              <div className="mt-2">
+                <img 
+                  src={formData.hero.backgroundImage} 
+                  alt="Hero Background Preview"
+                  className="img-thumbnail" 
+                  style={{maxHeight: '100px'}}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
+                  }}
+                />
+              </div>
+            )}
+          </Form.Group>
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Contact Information Editor
-  const renderContactInfoEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-address-card me-2"></i> Contact Information
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('contactInfo', 'title', 'Section Title')}
-        {renderMultilingualInput('contactInfo', 'description', 'Section Description', 'textarea')}
-        
-        <h6 className="mt-4 mb-3">Main Office</h6>
-        <Card className="mb-4" style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-          <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-            {renderNestedMultilingualInput('contactInfo', 'mainOffice', 'title', 'Office Title')}
-            {renderNestedMultilingualInput('contactInfo', 'mainOffice', 'address', 'Office Address')}
-            
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Phone Number</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.contactInfo.mainOffice.phone || ''}
-                onChange={(e) => handleNestedInputChange('contactInfo', 'mainOffice', 'phone', e.target.value)}
-                placeholder="e.g. +359 2 123 4567"
-                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Email Address</Form.Label>
-              <Form.Control
-                type="email"
-                value={formData.contactInfo.mainOffice.email || ''}
-                onChange={(e) => handleNestedInputChange('contactInfo', 'mainOffice', 'email', e.target.value)}
-                placeholder="e.g. info@buildholding.com"
-                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-              />
-            </Form.Group>
-            
-            {renderNestedMultilingualInput('contactInfo', 'mainOffice', 'hours', 'Office Hours')}
-          </Card.Body>
-        </Card>
-        
-        <h6 className="mt-4 mb-3">Social Media</h6>
-        <Card className="mb-4" style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-          <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Facebook URL</Form.Label>
-              <Form.Control
-                type="url"
-                value={formData.contactInfo.socialMedia.facebook || ''}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  contactInfo: {
-                    ...prev.contactInfo,
-                    socialMedia: {
-                      ...prev.contactInfo.socialMedia,
-                      facebook: e.target.value
+  const renderContactInfoEditor = () => {
+    if (!formData || !formData.contactInfo) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-address-card me-2"></i> Contact Information
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('contactInfo', 'title', 'Section Title')}
+          {renderMultilingualInput('contactInfo', 'description', 'Section Description', 'textarea')}
+          
+          <h6 className="mt-4 mb-3">Main Office</h6>
+          <Card className="mb-4" style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+            <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+              {renderNestedMultilingualInput('contactInfo', 'mainOffice', 'title', 'Office Title')}
+              {renderNestedMultilingualInput('contactInfo', 'mainOffice', 'address', 'Office Address')}
+              
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">Phone Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.contactInfo.mainOffice.phone || ''}
+                  onChange={(e) => handleNestedInputChange('contactInfo', 'mainOffice', 'phone', e.target.value)}
+                  placeholder="e.g. +359 2 123 4567"
+                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                />
+              </Form.Group>
+              
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">Email Address</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={formData.contactInfo.mainOffice.email || ''}
+                  onChange={(e) => handleNestedInputChange('contactInfo', 'mainOffice', 'email', e.target.value)}
+                  placeholder="e.g. info@buildholding.com"
+                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                />
+              </Form.Group>
+              
+              {renderNestedMultilingualInput('contactInfo', 'mainOffice', 'hours', 'Office Hours')}
+            </Card.Body>
+          </Card>
+          
+          <h6 className="mt-4 mb-3">Social Media</h6>
+          <Card className="mb-4" style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+            <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">Facebook URL</Form.Label>
+                <Form.Control
+                  type="url"
+                  value={formData.contactInfo.socialMedia.facebook || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    contactInfo: {
+                      ...prev.contactInfo,
+                      socialMedia: {
+                        ...prev.contactInfo.socialMedia,
+                        facebook: e.target.value
+                      }
                     }
-                  }
-                }))}
-                placeholder="e.g. https://facebook.com/buildholding"
-                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">LinkedIn URL</Form.Label>
-              <Form.Control
-                type="url"
-                value={formData.contactInfo.socialMedia.linkedin || ''}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  contactInfo: {
-                    ...prev.contactInfo,
-                    socialMedia: {
-                      ...prev.contactInfo.socialMedia,
-                      linkedin: e.target.value
+                  }))}
+                  placeholder="e.g. https://facebook.com/buildholding"
+                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                />
+              </Form.Group>
+              
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">LinkedIn URL</Form.Label>
+                <Form.Control
+                  type="url"
+                  value={formData.contactInfo.socialMedia.linkedin || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    contactInfo: {
+                      ...prev.contactInfo,
+                      socialMedia: {
+                        ...prev.contactInfo.socialMedia,
+                        linkedin: e.target.value
+                      }
                     }
-                  }
-                }))}
-                placeholder="e.g. https://linkedin.com/company/buildholding"
-                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Instagram URL</Form.Label>
-              <Form.Control
-                type="url"
-                value={formData.contactInfo.socialMedia.instagram || ''}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  contactInfo: {
-                    ...prev.contactInfo,
-                    socialMedia: {
-                      ...prev.contactInfo.socialMedia,
-                      instagram: e.target.value
+                  }))}
+                  placeholder="e.g. https://linkedin.com/company/buildholding"
+                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                />
+              </Form.Group>
+              
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">Instagram URL</Form.Label>
+                <Form.Control
+                  type="url"
+                  value={formData.contactInfo.socialMedia.instagram || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    contactInfo: {
+                      ...prev.contactInfo,
+                      socialMedia: {
+                        ...prev.contactInfo.socialMedia,
+                        instagram: e.target.value
+                      }
                     }
-                  }
-                }))}
-                placeholder="e.g. https://instagram.com/buildholding"
-                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Twitter URL</Form.Label>
-              <Form.Control
-                type="url"
-                value={formData.contactInfo.socialMedia.twitter || ''}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  contactInfo: {
-                    ...prev.contactInfo,
-                    socialMedia: {
-                      ...prev.contactInfo.socialMedia,
-                      twitter: e.target.value
+                  }))}
+                  placeholder="e.g. https://instagram.com/buildholding"
+                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                />
+              </Form.Group>
+              
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">Twitter URL</Form.Label>
+                <Form.Control
+                  type="url"
+                  value={formData.contactInfo.socialMedia.twitter || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    contactInfo: {
+                      ...prev.contactInfo,
+                      socialMedia: {
+                        ...prev.contactInfo.socialMedia,
+                        twitter: e.target.value
+                      }
                     }
-                  }
-                }))}
-                placeholder="e.g. https://twitter.com/buildholding"
-                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-              />
-            </Form.Group>
-          </Card.Body>
-        </Card>
-      </Card.Body>
-    </Card>
-  );
+                  }))}
+                  placeholder="e.g. https://twitter.com/buildholding"
+                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                />
+              </Form.Group>
+            </Card.Body>
+          </Card>
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Contact Form Editor
-  const renderContactFormEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-paper-plane me-2"></i> Contact Form
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('contactForm', 'title', 'Form Title')}
-        {renderMultilingualInput('contactForm', 'description', 'Form Description', 'textarea')}
-        
-        <h6 className="mt-4 mb-3">Form Labels</h6>
-        {renderMultilingualInput('contactForm', 'nameLabel', 'Name Field Label')}
-        {renderMultilingualInput('contactForm', 'emailLabel', 'Email Field Label')}
-        {renderMultilingualInput('contactForm', 'phoneLabel', 'Phone Field Label')}
-        {renderMultilingualInput('contactForm', 'subjectLabel', 'Subject Field Label')}
-        {renderMultilingualInput('contactForm', 'messageLabel', 'Message Field Label')}
-        {renderMultilingualInput('contactForm', 'submitButton', 'Submit Button Text')}
-        {renderMultilingualInput('contactForm', 'successMessage', 'Success Message', 'textarea')}
-      </Card.Body>
-    </Card>
-  );
+  const renderContactFormEditor = () => {
+    if (!formData || !formData.contactForm) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-paper-plane me-2"></i> Contact Form
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('contactForm', 'title', 'Form Title')}
+          {renderMultilingualInput('contactForm', 'description', 'Form Description', 'textarea')}
+          
+          <h6 className="mt-4 mb-3">Form Labels</h6>
+          {renderMultilingualInput('contactForm', 'nameLabel', 'Name Field Label')}
+          {renderMultilingualInput('contactForm', 'emailLabel', 'Email Field Label')}
+          {renderMultilingualInput('contactForm', 'phoneLabel', 'Phone Field Label')}
+          {renderMultilingualInput('contactForm', 'subjectLabel', 'Subject Field Label')}
+          {renderMultilingualInput('contactForm', 'messageLabel', 'Message Field Label')}
+          {renderMultilingualInput('contactForm', 'submitButton', 'Submit Button Text')}
+          {renderMultilingualInput('contactForm', 'successMessage', 'Success Message', 'textarea')}
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Map Settings Editor
-  const renderMapEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-map-marked-alt me-2"></i> Map Settings
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('map', 'title', 'Map Section Title')}
-        {renderMultilingualInput('map', 'description', 'Map Description')}
-        {renderMultilingualInput('map', 'markerTitle', 'Map Marker Title')}
-        
-        <h6 className="mt-4 mb-3">Map Coordinates</h6>
-        <div className="row">
-          <div className="col-md-6">
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Latitude</Form.Label>
-              <Form.Control
-                type="number"
-                step="0.000001"
-                value={formData.map.coordinates.lat}
-                onChange={(e) => handleCoordinateChange('lat', e.target.value)}
-                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-              />
-            </Form.Group>
+  const renderMapEditor = () => {
+    if (!formData || !formData.map) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-map-marked-alt me-2"></i> Map Settings
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('map', 'title', 'Map Section Title')}
+          {renderMultilingualInput('map', 'description', 'Map Description')}
+          {renderMultilingualInput('map', 'markerTitle', 'Map Marker Title')}
+          
+          <h6 className="mt-4 mb-3">Map Coordinates</h6>
+          <div className="row">
+            <div className="col-md-6">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">Latitude</Form.Label>
+                <Form.Control
+                  type="number"
+                  step="0.000001"
+                  value={formData.map.coordinates.lat}
+                  onChange={(e) => handleCoordinateChange('lat', e.target.value)}
+                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                />
+              </Form.Group>
+            </div>
+            <div className="col-md-6">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">Longitude</Form.Label>
+                <Form.Control
+                  type="number"
+                  step="0.000001"
+                  value={formData.map.coordinates.lng}
+                  onChange={(e) => handleCoordinateChange('lng', e.target.value)}
+                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                />
+              </Form.Group>
+            </div>
           </div>
-          <div className="col-md-6">
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Longitude</Form.Label>
-              <Form.Control
-                type="number"
-                step="0.000001"
-                value={formData.map.coordinates.lng}
-                onChange={(e) => handleCoordinateChange('lng', e.target.value)}
-                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-              />
-            </Form.Group>
-          </div>
-        </div>
-        
-        <Form.Group className="mb-3">
-          <Form.Label className="fw-bold">Zoom Level (1-20)</Form.Label>
-          <Form.Control
-            type="number"
-            min="1"
-            max="20"
-            value={formData.map.zoom}
-            onChange={(e) => handleInputChange('map', 'zoom', parseInt(e.target.value) || 15)}
-            style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-          />
-        </Form.Group>
-      </Card.Body>
-    </Card>
-  );
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">Zoom Level (1-20)</Form.Label>
+            <Form.Control
+              type="number"
+              min="1"
+              max="20"
+              value={formData.map.zoom}
+              onChange={(e) => handleInputChange('map', 'zoom', parseInt(e.target.value) || 15)}
+              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+            />
+          </Form.Group>
+        </Card.Body>
+      </Card>
+    );
+  };
   
   return (
     <div className="contact-admin-page">
@@ -532,7 +573,7 @@ const ContactAdmin = () => {
                     <i className="fas fa-info-circle me-1 text-primary"></i> All content fields support multiple languages.
                   </p>
                   <p className="mb-2">
-                    <i className="fas fa-info-circle me-1 text-primary"></i> Changes are saved to local storage and persist across sessions.
+                    <i className="fas fa-info-circle me-1 text-primary"></i> Changes are saved to Firebase and persist across sessions.
                   </p>
                   <p className="mb-0">
                     <i className="fas fa-info-circle me-1 text-primary"></i> For map coordinates, use decimal format (e.g. 42.697708).

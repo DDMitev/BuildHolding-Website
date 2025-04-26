@@ -26,6 +26,24 @@ const OurHoldingPage = () => {
     
     loadContent();
   }, []);
+
+  // Get translated content with fallback
+  const getTranslatedContent = (section, field, defaultValue = '') => {
+    if (!pageContent || !pageContent[section] || !pageContent[section][field]) {
+      return defaultValue;
+    }
+    
+    const fieldData = pageContent[section][field];
+    
+    // Check if the field is an object with language keys
+    if (fieldData && typeof fieldData === 'object' && (fieldData.en || fieldData.bg || fieldData.ru)) {
+      const lang = localStorage.getItem('preferredLanguage') || 'en';
+      return fieldData[lang] || fieldData.en || defaultValue;
+    }
+    
+    // If it's just a string
+    return fieldData || defaultValue;
+  };
   
   // Equipment items - use content from service if available, otherwise fall back to hardcoded data
   const equipmentItems = Array.isArray(pageContent?.equipment) ? pageContent.equipment : [
@@ -46,7 +64,11 @@ const OurHoldingPage = () => {
   ];
   
   // Timeline milestones - use content from service if available
-  const milestones = Array.isArray(pageContent?.milestones) ? pageContent.milestones : [
+  const milestones = pageContent?.history?.milestones?.map(milestone => ({
+    ...milestone,
+    title: milestone.title?.[t('language')] || milestone.title?.en || milestone.title || "Milestone",
+    description: milestone.description?.[t('language')] || milestone.description?.en || milestone.description || "Description"
+  })) || [
     { 
       year: "1995", 
       title: "Company Founded", 
@@ -206,8 +228,8 @@ const OurHoldingPage = () => {
   return (
     <div className="our-holding-page">
       <HeroSection 
-        title={pageContent?.hero?.title?.[t('language')] || pageContent?.hero?.title?.en || t('ourHolding.hero.title')}
-        subtitle={pageContent?.hero?.subtitle?.[t('language')] || pageContent?.hero?.subtitle?.en || t('ourHolding.hero.subtitle')}
+        title={getTranslatedContent('hero', 'title', t('ourHolding.hero.title'))}
+        subtitle={getTranslatedContent('hero', 'subtitle', t('ourHolding.hero.subtitle'))}
         backgroundImage={pageContent?.hero?.backgroundImage || "https://picsum.photos/seed/ourholding/1200/600"}
         height="50vh"
         overlayOpacity={0.7}
@@ -218,10 +240,10 @@ const OurHoldingPage = () => {
         <div className="row mb-5">
           <div className="col-lg-8 mx-auto text-center">
             <h2 className="section-title mb-4" style={{color: '#212529 !important'}}>
-              {pageContent?.overview?.title?.[t('language')] || pageContent?.overview?.title?.en || t('ourHolding.overview.title')}
+              {getTranslatedContent('overview', 'title', t('ourHolding.overview.title'))}
             </h2>
             <p className="lead" style={{color: '#495057 !important'}}>
-              {pageContent?.overview?.description?.[t('language')] || pageContent?.overview?.description?.en || t('ourHolding.overview.description')}
+              {getTranslatedContent('overview', 'description', t('ourHolding.overview.description'))}
             </p>
           </div>
         </div>
@@ -230,71 +252,129 @@ const OurHoldingPage = () => {
         <div className="row mb-5">
           <div className="col-12 text-center mb-4">
             <h2 className="section-title" style={{color: '#212529 !important'}}>
-              {pageContent?.values?.title?.[t('language')] || pageContent?.values?.title?.en || t('ourHolding.values.title')}
+              {getTranslatedContent('values', 'title', t('ourHolding.values.title'))}
             </h2>
           </div>
           
-          <div className="col-md-6 col-lg-3 mb-4">
-            <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-              <div className="card-body text-center p-4">
-                <div className="value-icon mb-3">
-                  <i className={pageContent?.values?.integrity?.icon || "fas fa-handshake"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+          <div className="row">
+            <div className="col-md-6">
+              {pageContent?.values?.items ? (
+                // Render values from Firebase data
+                <div className="row">
+                  {pageContent.values.items.map((value, index) => (
+                    <div key={index} className="col-md-6 mb-4">
+                      <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
+                        <div className="card-body text-center p-4">
+                          <div className="value-icon mb-3">
+                            <i className={value.icon || "fas fa-star"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+                          </div>
+                          <h4 className="value-title" style={{color: '#212529 !important'}}>
+                            {value.title?.[t('language')] || value.title?.en || `Value ${index + 1}`}
+                          </h4>
+                          <p className="card-text" style={{color: '#6c757d !important'}}>
+                            {value.description?.[t('language')] || value.description?.en || "Description not available"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <h4 className="value-title" style={{color: '#212529 !important'}}>
-                  {pageContent?.values?.integrity?.title?.[t('language')] || pageContent?.values?.integrity?.title?.en || t('ourHolding.values.integrity')}
-                </h4>
-                <p className="card-text" style={{color: '#6c757d !important'}}>
-                  {pageContent?.values?.integrity?.description?.[t('language')] || pageContent?.values?.integrity?.description?.en || t('ourHolding.values.integrityDesc')}
-                </p>
-              </div>
+              ) : (
+                // Render existing UI for backward compatibility
+                <div className="row">
+                  <div className="col-md-6 mb-4">
+                    <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
+                      <div className="card-body text-center p-4">
+                        <div className="value-icon mb-3">
+                          <i className={getTranslatedContent('values', 'integrity.icon', "fas fa-handshake")} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+                        </div>
+                        <h4 className="value-title" style={{color: '#212529 !important'}}>
+                          {getTranslatedContent('values', 'integrity.title', t('ourHolding.values.integrity'))}
+                        </h4>
+                        <p className="card-text" style={{color: '#6c757d !important'}}>
+                          {getTranslatedContent('values', 'integrity.description', t('ourHolding.values.integrityDesc'))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="col-md-6 mb-4">
+                    <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
+                      <div className="card-body text-center p-4">
+                        <div className="value-icon mb-3">
+                          <i className={getTranslatedContent('values', 'quality.icon', "fas fa-award")} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+                        </div>
+                        <h4 className="value-title" style={{color: '#212529 !important'}}>
+                          {getTranslatedContent('values', 'quality.title', t('ourHolding.values.quality'))}
+                        </h4>
+                        <p className="card-text" style={{color: '#6c757d !important'}}>
+                          {getTranslatedContent('values', 'quality.description', t('ourHolding.values.qualityDesc'))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-          
-          <div className="col-md-6 col-lg-3 mb-4">
-            <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-              <div className="card-body text-center p-4">
-                <div className="value-icon mb-3">
-                  <i className={pageContent?.values?.quality?.icon || "fas fa-award"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+
+            <div className="col-md-6">
+              {pageContent?.values?.items && pageContent.values.items.length > 2 ? (
+                // Render values from Firebase data if we have enough values
+                <div className="row">
+                  {pageContent.values.items.slice(2, 4).map((value, index) => (
+                    <div key={index + 2} className="col-md-6 mb-4">
+                      <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
+                        <div className="card-body text-center p-4">
+                          <div className="value-icon mb-3">
+                            <i className={value.icon || "fas fa-star"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+                          </div>
+                          <h4 className="value-title" style={{color: '#212529 !important'}}>
+                            {value.title?.[t('language')] || value.title?.en || `Value ${index + 3}`}
+                          </h4>
+                          <p className="card-text" style={{color: '#6c757d !important'}}>
+                            {value.description?.[t('language')] || value.description?.en || "Description not available"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <h4 className="value-title" style={{color: '#212529 !important'}}>
-                  {pageContent?.values?.quality?.title?.[t('language')] || pageContent?.values?.quality?.title?.en || t('ourHolding.values.quality')}
-                </h4>
-                <p className="card-text" style={{color: '#6c757d !important'}}>
-                  {pageContent?.values?.quality?.description?.[t('language')] || pageContent?.values?.quality?.description?.en || t('ourHolding.values.qualityDesc')}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="col-md-6 col-lg-3 mb-4">
-            <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-              <div className="card-body text-center p-4">
-                <div className="value-icon mb-3">
-                  <i className={pageContent?.values?.innovation?.icon || "fas fa-lightbulb"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+              ) : (
+                // Render existing UI for backward compatibility
+                <div className="row">
+                  <div className="col-md-6 mb-4">
+                    <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
+                      <div className="card-body text-center p-4">
+                        <div className="value-icon mb-3">
+                          <i className={getTranslatedContent('values', 'innovation.icon', "fas fa-lightbulb")} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+                        </div>
+                        <h4 className="value-title" style={{color: '#212529 !important'}}>
+                          {getTranslatedContent('values', 'innovation.title', t('ourHolding.values.innovation'))}
+                        </h4>
+                        <p className="card-text" style={{color: '#6c757d !important'}}>
+                          {getTranslatedContent('values', 'innovation.description', t('ourHolding.values.innovationDesc'))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="col-md-6 mb-4">
+                    <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
+                      <div className="card-body text-center p-4">
+                        <div className="value-icon mb-3">
+                          <i className={getTranslatedContent('values', 'sustainability.icon', "fas fa-leaf")} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
+                        </div>
+                        <h4 className="value-title" style={{color: '#212529 !important'}}>
+                          {getTranslatedContent('values', 'sustainability.title', t('ourHolding.values.sustainability'))}
+                        </h4>
+                        <p className="card-text" style={{color: '#6c757d !important'}}>
+                          {getTranslatedContent('values', 'sustainability.description', t('ourHolding.values.sustainabilityDesc'))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h4 className="value-title" style={{color: '#212529 !important'}}>
-                  {pageContent?.values?.innovation?.title?.[t('language')] || pageContent?.values?.innovation?.title?.en || t('ourHolding.values.innovation')}
-                </h4>
-                <p className="card-text" style={{color: '#6c757d !important'}}>
-                  {pageContent?.values?.innovation?.description?.[t('language')] || pageContent?.values?.innovation?.description?.en || t('ourHolding.values.innovationDesc')}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="col-md-6 col-lg-3 mb-4">
-            <div className="card h-100 border border-secondary" style={{backgroundColor: '#ffffff !important'}}>
-              <div className="card-body text-center p-4">
-                <div className="value-icon mb-3">
-                  <i className={pageContent?.values?.sustainability?.icon || "fas fa-leaf"} style={{color: '#0056b3', fontSize: '2.5rem'}}></i>
-                </div>
-                <h4 className="value-title" style={{color: '#212529 !important'}}>
-                  {pageContent?.values?.sustainability?.title?.[t('language')] || pageContent?.values?.sustainability?.title?.en || t('ourHolding.values.sustainability')}
-                </h4>
-                <p className="card-text" style={{color: '#6c757d !important'}}>
-                  {pageContent?.values?.sustainability?.description?.[t('language')] || pageContent?.values?.sustainability?.description?.en || t('ourHolding.values.sustainabilityDesc')}
-                </p>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -413,8 +493,16 @@ const OurHoldingPage = () => {
           >
             <div className="row">
               <div className="col-lg-10 col-xl-8 mx-auto p-4 bg-light rounded shadow-sm">
-                <h2 className="mission-title">{t('ourHolding.tabs.mission.title')}</h2>
-                <p className="mission-content lead">{t('ourHolding.tabs.mission.content')}</p>
+                <h2 className="mission-title">
+                  {pageContent?.tabs?.mission?.title?.[t('language')] || 
+                   pageContent?.tabs?.mission?.title?.en || 
+                   t('ourHolding.tabs.mission.title')}
+                </h2>
+                <p className="mission-content lead">
+                  {pageContent?.tabs?.mission?.content?.[t('language')] || 
+                   pageContent?.tabs?.mission?.content?.en || 
+                   t('ourHolding.tabs.mission.content')}
+                </p>
               </div>
             </div>
           </div>
@@ -427,8 +515,16 @@ const OurHoldingPage = () => {
           >
             <div className="row">
               <div className="col-md-6 mb-4">
-                <h2>{t('ourHolding.tabs.who.title')}</h2>
-                <p className="lead">{t('ourHolding.tabs.who.content')}</p>
+                <h2>
+                  {pageContent?.tabs?.approach?.title?.[t('language')] || 
+                   pageContent?.tabs?.approach?.title?.en || 
+                   t('ourHolding.tabs.who.title')}
+                </h2>
+                <p className="lead">
+                  {pageContent?.tabs?.approach?.content?.[t('language')] || 
+                   pageContent?.tabs?.approach?.content?.en || 
+                   t('ourHolding.tabs.who.content')}
+                </p>
               </div>
               <div className="col-md-6 mb-4">
                 <img 
@@ -448,8 +544,16 @@ const OurHoldingPage = () => {
           >
             <div className="row">
               <div className="col-md-6 mb-4">
-                <h2>{t('ourHolding.tabs.team.title')}</h2>
-                <p className="lead">{t('ourHolding.tabs.team.content')}</p>
+                <h2>
+                  {pageContent?.tabs?.sustainability?.title?.[t('language')] || 
+                   pageContent?.tabs?.sustainability?.title?.en || 
+                   t('ourHolding.tabs.team.title')}
+                </h2>
+                <p className="lead">
+                  {pageContent?.tabs?.sustainability?.content?.[t('language')] || 
+                   pageContent?.tabs?.sustainability?.content?.en || 
+                   t('ourHolding.tabs.team.content')}
+                </p>
               </div>
               <div className="col-md-6 mb-4">
                 <img 
@@ -469,8 +573,8 @@ const OurHoldingPage = () => {
           >
             <div className="row mb-4">
               <div className="col-12">
-                <h2>{t('ourHolding.tabs.equipment.title')}</h2>
-                <p className="lead mb-4">{t('ourHolding.tabs.equipment.content')}</p>
+                <h2>{getTranslatedContent('equipment', 'title', t('ourHolding.tabs.equipment.title'))}</h2>
+                <p className="lead mb-4">{getTranslatedContent('equipment', 'description', t('ourHolding.tabs.equipment.content'))}</p>
               </div>
             </div>
             
@@ -480,11 +584,18 @@ const OurHoldingPage = () => {
                   <div className="equipment-card card border-0 shadow-sm h-100">
                     <img 
                       src={item.image} 
-                      alt={item.name} 
-                      className="card-img-top equipment-image"
+                      className="card-img-top" 
+                      alt={typeof item.name === 'object' ? (item.name[t('language')] || item.name.en || item.id) : item.name}
+                      style={{height: '200px', objectFit: 'cover'}}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://via.placeholder.com/400x200?text=Equipment";
+                      }}
                     />
-                    <div className="card-body text-center">
-                      <h5 className="card-title">{item.name}</h5>
+                    <div className="card-body">
+                      <h5 className="card-title">
+                        {typeof item.name === 'object' ? (item.name[t('language')] || item.name.en || item.id) : item.name}
+                      </h5>
                     </div>
                   </div>
                 </div>
@@ -492,40 +603,67 @@ const OurHoldingPage = () => {
             </div>
           </div>
           
-          {/* Quality Standards Tab - Selector and Certificate Display */}
+          {/* Quality Standards Tab - Accordion */}
           <div 
             className={`tab-pane fade ${activeTab === 'quality' ? 'show active' : ''}`} 
             id="quality" 
             role="tabpanel"
           >
-            <div className="row">
-              <div className="col-lg-4 mb-4">
-                <h2>{t('ourHolding.tabs.quality.title')}</h2>
-                <p className="lead mb-4">{t('ourHolding.tabs.quality.content')}</p>
-                
-                <div className="list-group quality-selector">
-                  {qualifications.map(qual => (
-                    <button
-                      key={qual.id}
-                      className={`list-group-item list-group-item-action ${activeQualification === qual.id ? 'active' : ''}`}
-                      onClick={() => setActiveQualification(qual.id)}
-                    >
-                      {qual.name}
-                    </button>
-                  ))}
-                </div>
+            <div className="row mb-4">
+              <div className="col-12">
+                <h2>{getTranslatedContent('quality', 'title', t('ourHolding.tabs.quality.title'))}</h2>
+                <p className="lead mb-4">{getTranslatedContent('quality', 'description', t('ourHolding.tabs.quality.content'))}</p>
               </div>
-              
-              <div className="col-lg-8">
-                <div className="certificate-display p-3 bg-light rounded shadow-sm">
-                  <h4 className="mb-3">{qualifications.find(q => q.id === activeQualification)?.name}</h4>
-                  <div className="certificate-image-container">
-                    <img 
-                      src={qualifications.find(q => q.id === activeQualification)?.certificate} 
-                      alt={`${qualifications.find(q => q.id === activeQualification)?.name} Certificate`}
-                      className="img-fluid rounded certificate-image"
-                    />
-                  </div>
+            </div>
+            
+            <div className="row">
+              <div className="col-md-4 mb-4">
+                <ul className="nav flex-column nav-tabs certifications-tabs" role="tablist">
+                  {qualifications.map(cert => (
+                    <li className="nav-item" key={cert.id}>
+                      <button 
+                        className={`nav-link ${activeQualification === cert.id ? 'active' : ''}`} 
+                        onClick={() => setActiveQualification(cert.id)}
+                        role="tab"
+                      >
+                        {typeof cert.name === 'object' ? (cert.name[t('language')] || cert.name.en || cert.id) : cert.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="col-md-8 mb-4">
+                <div className="tab-content certification-content">
+                  {qualifications.map(cert => (
+                    <div 
+                      key={cert.id}
+                      className={`tab-pane fade ${activeQualification === cert.id ? 'show active' : ''}`}
+                      role="tabpanel"
+                    >
+                      <div className="card">
+                        <img 
+                          src={cert.certificate} 
+                          className="card-img-top" 
+                          alt={typeof cert.name === 'object' ? (cert.name[t('language')] || cert.name.en || cert.id) : cert.name}
+                          style={{height: '300px', objectFit: 'cover'}}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "https://via.placeholder.com/800x600?text=Certificate";
+                          }}
+                        />
+                        <div className="card-body">
+                          <h5 className="card-title">
+                            {typeof cert.name === 'object' ? (cert.name[t('language')] || cert.name.en || cert.id) : cert.name}
+                          </h5>
+                          <p className="card-text">
+                            {typeof cert.description === 'object' ? 
+                              (cert.description[t('language')] || cert.description.en || t('ourHolding.quality.standardDescription')) : 
+                              (cert.description || t('ourHolding.quality.standardDescription'))}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -538,120 +676,119 @@ const OurHoldingPage = () => {
             role="tabpanel"
           >
             <div className="row mb-4">
-              <div className="col-12 text-center">
-                <h2 className="display-4 timeline-heading">{t('ourHolding.tabs.timeline.title')}</h2>
-                <p className="lead mb-5">{t('ourHolding.tabs.timeline.content')}</p>
+              <div className="col-12">
+                <h2>{getTranslatedContent('timeline', 'title', t('ourHolding.tabs.timeline.title'))}</h2>
+                <p className="lead mb-4">{getTranslatedContent('timeline', 'description', t('ourHolding.tabs.timeline.content'))}</p>
               </div>
             </div>
             
-            <div className="vertical-timeline-container" ref={timelineRef}>
-              <div className="timeline-line"></div>
-              
+            <div className="timeline">
               {milestones.map((milestone, index) => (
-                <div 
-                  key={index} 
-                  className={`timeline-event ${animateTimeline ? 'animated' : ''}`}
-                >
-                  <TimelineMarker icon={milestone.icon} bgColor={milestone.bgColor} />
-                  <TimelineContent 
-                    position={index % 2 === 0 ? 'left' : 'right'} 
-                    year={milestone.year}
-                    title={milestone.title}
-                    description={milestone.description}
-                  />
+                <div className={`timeline-item ${index % 2 ? 'right' : 'left'}`} key={index}>
+                  <div className="timeline-badge" style={{ backgroundColor: milestone.bgColor || '#0056b3' }}>
+                    <i className={`fas ${milestone.icon || 'fa-building'}`}></i>
+                  </div>
+                  <div className="timeline-panel">
+                    <div className="timeline-heading">
+                      <h4 className="timeline-title">{milestone.title}</h4>
+                      <p><small className="text-muted"><i className="fas fa-calendar-alt mr-1"></i> {milestone.year}</small></p>
+                    </div>
+                    <div className="timeline-body">
+                      <p>{milestone.description}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
           
-          {/* Partners Tab - Interactive Partner Cards */}
+          {/* Partners Tab - Card Grid */}
           <div 
             className={`tab-pane fade ${activeTab === 'partners' ? 'show active' : ''}`} 
             id="partners" 
             role="tabpanel"
           >
-            <div className="row mb-5">
-              <div className="col-12 text-center">
-                <h2 className="display-4 mb-3">{t('ourHolding.tabs.partners.title')}</h2>
-                <p className="lead mb-5">{t('ourHolding.tabs.partners.content')}</p>
+            <div className="row mb-4">
+              <div className="col-12">
+                <h2>{getTranslatedContent('partners', 'title', t('ourHolding.tabs.partners.title'))}</h2>
+                <p className="lead mb-4">{getTranslatedContent('partners', 'description', t('ourHolding.tabs.partners.content'))}</p>
               </div>
             </div>
             
-            <div className="partners-container">
-              <div className="row partners-showcase">
-                {partners.map((partner, index) => (
-                  <div className="col-md-6 col-lg-3 mb-4" key={partner.id}>
-                    <div className="partner-card">
-                      <div className="partner-card-inner">
-                        <div className="partner-card-front">
-                          <div className="logo-container mb-3">
-                            <img src={partner.logo} alt={partner.name} className="partner-logo" />
-                          </div>
-                          <h4 className="partner-name">{partner.name}</h4>
-                          <span className="partner-type badge bg-primary">{partner.type}</span>
-                        </div>
-                        <div className="partner-card-back">
-                          <div className="partner-details">
-                            <h5>{partner.name}</h5>
-                            <p className="partnership-year">
-                              <i className="fas fa-handshake me-2"></i>
-                              Partner since {partner.year}
-                            </p>
-                            <p className="partner-description">{partner.description}</p>
-                          </div>
-                        </div>
-                      </div>
+            <div className="row">
+              {partners.map(partner => (
+                <div className="col-md-4 col-lg-3 mb-4" key={partner.id}>
+                  <div className="card partner-card h-100 border-0 shadow-sm">
+                    <div className="card-body text-center">
+                      <img 
+                        src={partner.logo} 
+                        alt={typeof partner.name === 'object' ? 
+                          (partner.name[t('language')] || partner.name.en || 'Partner') : 
+                          (partner.name || 'Partner')}
+                        className="img-fluid partner-logo mb-3"
+                        style={{maxHeight: '80px'}}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://via.placeholder.com/150x80?text=Partner";
+                        }}
+                      />
+                      <h5 className="card-title">
+                        {typeof partner.name === 'object' ? 
+                          (partner.name[t('language')] || partner.name.en || 'Partner') : 
+                          (partner.name || 'Partner')}
+                      </h5>
+                      {partner.website && (
+                        <a href={partner.website} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary mt-2">
+                          {t('common.visitWebsite')}
+                        </a>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
           
-          {/* Clients Tab - Using same flip card format as partners */}
+          {/* Clients Tab - Grid View */}
           <div 
             className={`tab-pane fade ${activeTab === 'clients' ? 'show active' : ''}`} 
             id="clients" 
             role="tabpanel"
           >
-            <div className="row mb-5">
-              <div className="col-12 text-center">
-                <h2 className="display-4 mb-3">{t('ourHolding.tabs.clients.title')}</h2>
-                <p className="lead mb-5">{t('ourHolding.tabs.clients.content')}</p>
+            <div className="row mb-4">
+              <div className="col-12">
+                <h2>{getTranslatedContent('clients', 'title', t('ourHolding.tabs.clients.title'))}</h2>
+                <p className="lead mb-4">{getTranslatedContent('clients', 'description', t('ourHolding.tabs.clients.content'))}</p>
               </div>
             </div>
             
-            <div className="clients-container">
-              <div className="row clients-showcase">
-                {clients.map((client, index) => (
-                  <div className="col-md-6 col-lg-3 mb-4" key={client.id}>
-                    <div className="client-card">
-                      <div className="client-card-inner">
-                        <div className="client-card-front">
-                          <div className="logo-container mb-3">
-                            <img src={client.logo} alt={client.name} className="client-logo" />
-                          </div>
-                          <h4 className="client-name">{client.name}</h4>
-                          <span className="client-type badge bg-secondary">{client.type}</span>
-                        </div>
-                        <div className="client-card-back">
-                          <div className="client-details">
-                            <h5>{client.name}</h5>
-                            <div className="client-projects-count">
-                              <span className="projects-number">{client.projects}</span>
-                              <span className="projects-label">Projects Completed</span>
-                            </div>
-                            <p className="client-highlight">
-                              <i className="fas fa-star me-2"></i>
-                              {client.highlight}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+            <div className="row">
+              {clients.map(client => (
+                <div className="col-md-3 col-lg-2 mb-4" key={client.id}>
+                  <div className="client-card card h-100 border-0 shadow-sm">
+                    <div className="card-body text-center p-3">
+                      <img 
+                        src={client.logo} 
+                        alt={typeof client.name === 'object' ? 
+                          (client.name[t('language')] || client.name.en || 'Client') : 
+                          (client.name || 'Client')} 
+                        className="img-fluid client-logo"
+                        style={{maxHeight: '60px'}}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://via.placeholder.com/120x60?text=Client";
+                        }}
+                      />
+                      
+                      <p className="client-name small mt-2 mb-0">
+                        {typeof client.name === 'object' ? 
+                          (client.name[t('language')] || client.name.en || 'Client') : 
+                          (client.name || 'Client')}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

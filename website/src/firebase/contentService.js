@@ -26,7 +26,7 @@ const HOLDING_CONTENT_COLLECTION = 'holding_content';
 const CONTENT_DOC_ID = 'main';
 
 // Default home content structure with multilingual support
-const defaultHomeContent = {
+export const defaultHomeContent = {
   hero: {
     title: {
       en: "Building Excellence",
@@ -164,7 +164,7 @@ const defaultHomeContent = {
 };
 
 // Default contact content
-const defaultContactContent = {
+export const defaultContactContent = {
   header: {
     title: {
       en: "Contact Us",
@@ -241,8 +241,8 @@ const defaultContactContent = {
 };
 
 // Default holding content
-const defaultHoldingContent = {
-  header: {
+export const defaultHoldingContent = {
+  hero: {
     title: {
       en: "Our Holding Structure",
       bg: "Структура на холдинга",
@@ -252,12 +252,128 @@ const defaultHoldingContent = {
       en: "A family of companies working together to deliver excellence",
       bg: "Семейство от компании, работещи заедно за постигане на съвършенство",
       ru: "Семья компаний, работающих вместе для достижения совершенства"
-    }
+    },
+    backgroundImage: "/images/hero-bg-holding.jpg"
   },
-  description: {
-    en: "BuildHolding brings together specialized companies across the construction industry to provide a complete range of services from initial planning to project completion.",
-    bg: "BuildHolding обединява специализирани компании в строителната индустрия, за да предостави пълен спектър от услуги от първоначалното планиране до завършването на проекта.",
-    ru: "BuildHolding объединяет специализированные компании строительной отрасли, чтобы предоставить полный спектр услуг от первоначального планирования до завершения проекта."
+  about: {
+    title: {
+      en: "About Our Holding",
+      bg: "За нашия холдинг",
+      ru: "О нашем холдинге"
+    },
+    description: {
+      en: "BuildHolding brings together specialized companies across the construction industry to provide a complete range of services from initial planning to project completion.",
+      bg: "BuildHolding обединява специализирани компании в строителната индустрия, за да предостави пълен спектър от услуги от първоначалното планиране до завършването на проекта.",
+      ru: "BuildHolding объединяет специализированные компании строительной отрасли, чтобы предоставить полный спектр услуг от первоначального планирования до завершения проекта."
+    },
+    image: "/images/about-holding.jpg"
+  },
+  overview: {
+    title: {
+      en: "Company Overview",
+      bg: "Преглед на компанията",
+      ru: "Обзор компании"
+    },
+    description: {
+      en: "BuildHolding was established to create synergy between various construction and real estate businesses. Our integrated approach allows us to tackle complex projects efficiently.",
+      bg: "BuildHolding е създаден, за да създаде синергия между различни строителни и компании за недвижими имоти. Нашият интегриран подход ни позволява да се справяме ефективно със сложни проекти.",
+      ru: "BuildHolding был создан для создания синергии между различными строительными компаниями и компаниями, занимающимися недвижимостью. Наш интегрированный подход позволяет нам эффективно решать сложные проекты."
+    },
+    image: "/images/holding-overview.jpg"
+  },
+  values: {
+    title: {
+      en: "Our Values",
+      bg: "Нашите ценности",
+      ru: "Наши ценности"
+    },
+    subtitle: {
+      en: "The principles that guide our business",
+      bg: "Принципите, които ръководят нашия бизнес",
+      ru: "Принципы, которыми руководствуется наш бизнес"
+    },
+    items: [
+      {
+        icon: "fas fa-handshake",
+        title: {
+          en: "Integrity",
+          bg: "Почтеност",
+          ru: "Честность"
+        },
+        description: {
+          en: "We maintain the highest standards of honesty and transparency in all our dealings.",
+          bg: "Поддържаме най-високите стандарти за честност и прозрачност във всички наши дейности.",
+          ru: "Мы поддерживаем высочайшие стандарты честности и прозрачности во всех наших делах."
+        }
+      },
+      {
+        icon: "fas fa-star",
+        title: {
+          en: "Excellence",
+          bg: "Съвършенство",
+          ru: "Совершенство"
+        },
+        description: {
+          en: "We strive for excellence in every project, no matter the size.",
+          bg: "Стремим се към съвършенство във всеки проект, независимо от размера.",
+          ru: "Мы стремимся к совершенству в каждом проекте, независимо от его размера."
+        }
+      },
+      {
+        icon: "fas fa-users",
+        title: {
+          en: "Collaboration",
+          bg: "Сътрудничество",
+          ru: "Сотрудничество"
+        },
+        description: {
+          en: "We believe in working together - with our clients and between our companies.",
+          bg: "Вярваме в съвместната работа - с нашите клиенти и между нашите компании.",
+          ru: "Мы верим в совместную работу - с нашими клиентами и между нашими компаниями."
+        }
+      }
+    ]
+  },
+  stats: {
+    title: {
+      en: "Our Impact in Numbers",
+      bg: "Нашето въздействие в числа",
+      ru: "Наше влияние в цифрах"
+    },
+    items: [
+      {
+        number: 25,
+        label: {
+          en: "Years of Experience",
+          bg: "Години опит",
+          ru: "Лет опыта"
+        }
+      },
+      {
+        number: 500,
+        label: {
+          en: "Completed Projects",
+          bg: "Завършени проекти",
+          ru: "Завершенных проектов"
+        }
+      },
+      {
+        number: 150,
+        label: {
+          en: "Skilled Professionals",
+          bg: "Квалифицирани професионалисти",
+          ru: "Квалифицированных специалистов"
+        }
+      },
+      {
+        number: 10,
+        label: {
+          en: "Subsidiary Companies",
+          bg: "Дъщерни компании",
+          ru: "Дочерних компаний"
+        }
+      }
+    ]
   },
   structure: {
     title: {
@@ -307,50 +423,188 @@ const defaultHoldingContent = {
       }
     ]
   },
-  values: {
+  visionMission: {
     title: {
-      en: "Our Values",
-      bg: "Нашите ценности",
-      ru: "Наши ценности"
+      en: "Vision & Mission",
+      bg: "Визия и мисия",
+      ru: "Видение и миссия"
     },
-    items: [
+    vision: {
+      title: {
+        en: "Our Vision",
+        bg: "Нашата визия",
+        ru: "Наше видение"
+      },
+      description: {
+        en: "To be Eastern Europe's most trusted and innovative construction holding company, transforming the urban landscape while setting new standards for quality and sustainability.",
+        bg: "Да бъдем най-надеждната и иновативна холдингова строителна компания в Източна Европа, трансформирайки градския пейзаж, докато поставяме нови стандарти за качество и устойчивост.",
+        ru: "Стать самой надежной и инновационной строительной холдинговой компанией в Восточной Европе, преобразующей городской ландшафт и устанавливающей новые стандарты качества и устойчивости."
+      }
+    },
+    mission: {
+      title: {
+        en: "Our Mission",
+        bg: "Нашата мисия",
+        ru: "Наша миссия"
+      },
+      description: {
+        en: "To deliver exceptional construction and development services through our family of specialized companies, focusing on innovation, quality, and client satisfaction.",
+        bg: "Да предоставяме изключителни строителни и развойни услуги чрез нашето семейство от специализирани компании, фокусирайки се върху иновации, качество и удовлетвореност на клиентите.",
+        ru: "Предоставлять исключительные строительные и девелоперские услуги через наше семейство специализированных компаний, уделяя особое внимание инновациям, качеству и удовлетворенности клиентов."
+      }
+    }
+  },
+  history: {
+    title: {
+      en: "Our History",
+      bg: "Нашата история",
+      ru: "Наша история"
+    },
+    subtitle: {
+      en: "The journey to becoming a leading holding company",
+      bg: "Пътят към превръщането ни във водеща холдингова компания",
+      ru: "Путь к становлению ведущей холдинговой компанией"
+    },
+    milestones: [
       {
-        icon: "fas fa-handshake",
+        year: "1998",
         title: {
-          en: "Integrity",
-          bg: "Почтеност",
-          ru: "Честность"
+          en: "Foundation",
+          bg: "Основаване",
+          ru: "Основание"
         },
         description: {
-          en: "We maintain the highest standards of honesty and transparency in all our dealings.",
-          bg: "Поддържаме най-високите стандарти за честност и прозрачност във всички наши дейности.",
-          ru: "Мы поддерживаем высочайшие стандарты честности и прозрачности во всех наших делах."
+          en: "BuildHolding was established with a single construction company.",
+          bg: "BuildHolding беше основан с една строителна компания.",
+          ru: "BuildHolding был основан с одной строительной компанией."
         }
       },
       {
-        icon: "fas fa-star",
+        year: "2005",
         title: {
-          en: "Excellence",
-          bg: "Съвършенство",
-          ru: "Совершенство"
+          en: "Expansion",
+          bg: "Разширяване",
+          ru: "Расширение"
         },
         description: {
-          en: "We strive for excellence in every project, no matter the size.",
-          bg: "Стремим се към съвършенство във всеки проект, независимо от размера.",
-          ru: "Мы стремимся к совершенству в каждом проекте, независимо от его размера."
+          en: "Acquired three more construction companies and expanded into design services.",
+          bg: "Придобихме още три строителни компании и се разширихме в дизайнерски услуги.",
+          ru: "Приобрели еще три строительные компании и расширились в сферу дизайнерских услуг."
         }
       },
       {
-        icon: "fas fa-users",
+        year: "2015",
         title: {
-          en: "Collaboration",
-          bg: "Сътрудничество",
-          ru: "Сотрудничество"
+          en: "International Growth",
+          bg: "Международен растеж",
+          ru: "Международный рост"
         },
         description: {
-          en: "We believe in working together - with our clients and between our companies.",
-          bg: "Вярваме в съвместната работа - с нашите клиенти и между нашите компании.",
-          ru: "Мы верим в совместную работу - с нашими клиентами и между нашими компаниями."
+          en: "Expanded operations across Eastern Europe with projects in 5 countries.",
+          bg: "Разширихме дейността си в Източна Европа с проекти в 5 държави.",
+          ru: "Расширили деятельность по всей Восточной Европе с проектами в 5 странах."
+        }
+      },
+      {
+        year: "2022",
+        title: {
+          en: "Innovation Leadership",
+          bg: "Лидерство в иновациите",
+          ru: "Лидерство в инновациях"
+        },
+        description: {
+          en: "Became the regional leader in sustainable construction and smart building technologies.",
+          bg: "Станахме регионален лидер в устойчивото строителство и технологиите за интелигентни сгради.",
+          ru: "Стали региональным лидером в области устойчивого строительства и технологий умных зданий."
+        }
+      }
+    ]
+  },
+  tabs: {
+    mission: {
+      title: {
+        en: "Our Mission",
+        bg: "Нашата мисия",
+        ru: "Наша миссия"
+      },
+      content: {
+        en: "BuildHolding's mission is to deliver exceptional construction and development services through our family of specialized companies, focusing on innovation, quality, and client satisfaction. We aim to transform the built environment while maintaining the highest standards of ethical business practices.",
+        bg: "Мисията на BuildHolding е да предоставя изключителни строителни и развойни услуги чрез нашето семейство от специализирани компании, фокусирайки се върху иновации, качество и удовлетвореност на клиентите. Стремим се да трансформираме изградената среда, като поддържаме най-високите стандарти за етични бизнес практики.",
+        ru: "Миссия BuildHolding - предоставлять исключительные строительные и девелоперские услуги через наше семейство специализированных компаний, уделяя особое внимание инновациям, качеству и удовлетворенности клиентов. Мы стремимся преобразить построенную среду, соблюдая самые высокие стандарты этичной деловой практики."
+      }
+    },
+    approach: {
+      title: {
+        en: "Our Approach",
+        bg: "Нашият подход",
+        ru: "Наш подход"
+      },
+      content: {
+        en: "At BuildHolding, we take an integrated approach to construction and development. By bringing together specialized expertise from across our family of companies, we can address all aspects of a project - from initial concept and design through to construction, finishing, and maintenance. This holistic approach ensures seamless coordination, cost efficiency, and exceptional results.",
+        bg: "В BuildHolding прилагаме интегриран подход към строителството и развитието. Като обединяваме специализиран опит от цялото ни семейство от компании, можем да адресираме всички аспекти на един проект - от първоначалната концепция и дизайн до строителството, довършителните работи и поддръжката. Този холистичен подход осигурява безпроблемна координация, ефективност на разходите и изключителни резултати.",
+        ru: "В BuildHolding мы применяем комплексный подход к строительству и девелопменту. Объединяя специализированный опыт нашего семейства компаний, мы можем охватить все аспекты проекта - от первоначальной концепции и дизайна до строительства, отделки и обслуживания. Этот целостный подход обеспечивает бесперебойную координацию, экономическую эффективность и исключительные результаты."
+      }
+    },
+    sustainability: {
+      title: {
+        en: "Sustainability",
+        bg: "Устойчивост",
+        ru: "Устойчивость"
+      },
+      content: {
+        en: "Sustainability is at the core of BuildHolding's business philosophy. We are committed to minimizing the environmental impact of our projects through innovative green building practices, energy-efficient designs, and responsible resource management. Our sustainability initiatives extend beyond our projects to our corporate operations and community engagement programs.",
+        bg: "Устойчивостта е в основата на бизнес философията на BuildHolding. Ние сме ангажирани да минимизираме въздействието върху околната среда на нашите проекти чрез иновативни практики за зелено строителство, енергийно ефективни дизайни и отговорно управление на ресурсите. Нашите инициативи за устойчивост се простират отвъд нашите проекти до нашите корпоративни операции и програми за ангажиране на общността.",
+        ru: "Устойчивость лежит в основе бизнес-философии BuildHolding. Мы стремимся минимизировать воздействие наших проектов на окружающую среду с помощью инновационных практик зеленого строительства, энергоэффективных проектов и ответственного управления ресурсами. Наши инициативы в области устойчивого развития выходят за рамки наших проектов и охватывают корпоративные операции и программы взаимодействия с сообществом."
+      }
+    }
+  },
+  team: {
+    title: {
+      en: "Leadership Team",
+      bg: "Лидерски екип",
+      ru: "Команда руководителей"
+    },
+    members: [
+      {
+        name: "Alexander Petrov",
+        image: "/images/team/ceo.jpg",
+        position: {
+          en: "Chief Executive Officer",
+          bg: "Главен изпълнителен директор",
+          ru: "Генеральный директор"
+        },
+        bio: {
+          en: "Alexander founded BuildHolding in 1998 and has led its growth into Eastern Europe's premier construction group. He brings over 30 years of industry experience and a vision for sustainable development.",
+          bg: "Александър основа BuildHolding през 1998 г. и ръководи растежа ѝ до водеща строителна група в Източна Европа. Той има над 30 години опит в индустрията и визия за устойчиво развитие.",
+          ru: "Александр основал BuildHolding в 1998 году и руководил ее ростом до ведущей строительной группы Восточной Европы. Он обладает более чем 30-летним опытом работы в отрасли и видением устойчивого развития."
+        }
+      },
+      {
+        name: "Maria Ivanova",
+        image: "/images/team/cfo.jpg",
+        position: {
+          en: "Chief Financial Officer",
+          bg: "Главен финансов директор",
+          ru: "Финансовый директор"
+        },
+        bio: {
+          en: "Maria joined BuildHolding in 2005, bringing her expertise in corporate finance and strategic planning. She has been instrumental in managing the group's acquisitions and financial growth.",
+          bg: "Мария се присъедини към BuildHolding през 2005 г., внасяйки своя експертен опит в корпоративните финанси и стратегическото планиране. Тя изигра важна роля в управлението на придобиванията на групата и финансовия растеж.",
+          ru: "Мария присоединилась к BuildHolding в 2005 году, привнеся свой опыт в области корпоративных финансов и стратегического планирования. Она сыграла важную роль в управлении приобретениями и финансовым ростом группы."
+        }
+      },
+      {
+        name: "Stefan Dimitrov",
+        image: "/images/team/cto.jpg",
+        position: {
+          en: "Chief Technical Officer",
+          bg: "Главен технически директор",
+          ru: "Технический директор"
+        },
+        bio: {
+          en: "Stefan oversees all technical aspects of BuildHolding's operations. With a background in civil engineering and smart building technologies, he drives innovation across all our projects.",
+          bg: "Стефан наблюдава всички технически аспекти на дейността на BuildHolding. С опит в гражданското инженерство и технологиите за интелигентни сгради, той движи иновациите във всички наши проекти.",
+          ru: "Стефан курирует все технические аспекты деятельности BuildHolding. Имея опыт в области гражданского строительства и технологий умных зданий, он внедряет инновации во всех наших проектах."
         }
       }
     ]
@@ -578,17 +832,45 @@ export const getHoldingContent = async () => {
       return {
         ...defaultHoldingContent,
         ...data,
-        header: {
-          ...defaultHoldingContent.header,
-          ...(data.header || {})
+        hero: {
+          ...defaultHoldingContent.hero,
+          ...(data.hero || {})
+        },
+        about: {
+          ...defaultHoldingContent.about,
+          ...(data.about || {})
+        },
+        overview: {
+          ...defaultHoldingContent.overview,
+          ...(data.overview || {})
+        },
+        values: {
+          ...defaultHoldingContent.values,
+          ...(data.values || {})
+        },
+        stats: {
+          ...defaultHoldingContent.stats,
+          ...(data.stats || {})
         },
         structure: {
           ...defaultHoldingContent.structure,
           ...(data.structure || {})
         },
-        values: {
-          ...defaultHoldingContent.values,
-          ...(data.values || {})
+        visionMission: {
+          ...defaultHoldingContent.visionMission,
+          ...(data.visionMission || {})
+        },
+        history: {
+          ...defaultHoldingContent.history,
+          ...(data.history || {})
+        },
+        tabs: {
+          ...defaultHoldingContent.tabs,
+          ...(data.tabs || {})
+        },
+        team: {
+          ...defaultHoldingContent.team,
+          ...(data.team || {})
         }
       };
     }
@@ -662,7 +944,7 @@ export const migrateLocalStorageToFirestore = async () => {
   }
 };
 
-export default {
+const contentService = {
   getHomeContent,
   saveHomeContent,
   getContactContent,
@@ -670,7 +952,7 @@ export default {
   getHoldingContent,
   saveHoldingContent,
   migrateLocalStorageToFirestore,
-  defaultHomeContent,
-  defaultContactContent,
-  defaultHoldingContent
+  initializeFirestoreContent
 };
+
+export default contentService;

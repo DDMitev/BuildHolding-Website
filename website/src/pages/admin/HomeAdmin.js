@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, Nav, Tab, Form, Button, Alert } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import * as homeContentService from '../../services/homeContentService';
-import { getProjects } from '../../firebase/projectService';
+import projectService from '../../firebase/projectService';
+import { getHomeContent, saveHomeContent, defaultHomeContent } from '../../firebase/contentService';
 import { useFirebase } from '../../firebase/FirebaseContext';
 
 const HomeAdmin = () => {
@@ -12,20 +12,40 @@ const HomeAdmin = () => {
   const languages = ['en', 'bg', 'ru'];
   const currentLanguage = i18n.language || 'en';
   
-  const [formData, setFormData] = useState(homeContentService.getHomeContent());
+  const [formData, setFormData] = useState(null);
   const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [activeTab, setActiveTab] = useState('hero');
+  
+  // Load content from Firebase
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        setLoading(true);
+        const content = await getHomeContent();
+        setFormData(content);
+        console.log("Home admin content loaded from Firebase:", content);
+      } catch (err) {
+        console.error("Error loading home content from Firebase:", err);
+        // Use default content as fallback
+        setFormData(defaultHomeContent);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadContent();
+  }, []);
   
   // Load projects for featured projects selection
   useEffect(() => {
     const loadProjects = async () => {
       try {
         setLoading(true);
-        const allProjects = await getProjects();
+        const allProjects = await projectService.getProjects();
         if (allProjects && allProjects.length > 0) {
           setProjects(allProjects);
         }
@@ -39,13 +59,13 @@ const HomeAdmin = () => {
     loadProjects();
   }, []);
   
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       setSaving(true);
       setSaveSuccess(false);
       setSaveError(null);
       
-      const success = homeContentService.saveHomeContent(formData);
+      const success = await saveHomeContent(formData);
       
       if (success) {
         setSaveSuccess(true);
@@ -64,7 +84,7 @@ const HomeAdmin = () => {
   
   const handleReset = () => {
     if (window.confirm('Are you sure you want to reset all Home page content to default values? This cannot be undone.')) {
-      setFormData(homeContentService.default.defaultHomeContent);
+      setFormData({...defaultHomeContent});
     }
   };
   
@@ -176,221 +196,241 @@ const HomeAdmin = () => {
   };
   
   // Render Hero Section Editor
-  const renderHeroEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-image me-2"></i> Hero Section
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('hero', 'title', 'Hero Title')}
-        {renderMultilingualInput('hero', 'subtitle', 'Hero Subtitle')}
-        {renderMultilingualInput('hero', 'buttonText', 'Button Text')}
-        
-        <Form.Group className="mb-3">
-          <Form.Label className="fw-bold">Background Image URL</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.hero.backgroundImage || ''}
-            onChange={(e) => handleInputChange('hero', 'backgroundImage', e.target.value)}
-            placeholder="e.g. /images/hero-bg.jpg"
-            style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-          />
-          {formData.hero.backgroundImage && (
-            <div className="mt-2">
-              <img 
-                src={formData.hero.backgroundImage} 
-                alt="Hero Background Preview"
-                className="img-thumbnail" 
-                style={{maxHeight: '100px'}}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
-                }}
-              />
-            </div>
-          )}
-        </Form.Group>
-      </Card.Body>
-    </Card>
-  );
+  const renderHeroEditor = () => {
+    if (!formData) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-image me-2"></i> Hero Section
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('hero', 'title', 'Hero Title')}
+          {renderMultilingualInput('hero', 'subtitle', 'Hero Subtitle')}
+          {renderMultilingualInput('hero', 'buttonText', 'Button Text')}
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">Background Image URL</Form.Label>
+            <Form.Control
+              type="text"
+              value={formData.hero?.backgroundImage || ''}
+              onChange={(e) => handleInputChange('hero', 'backgroundImage', e.target.value)}
+              placeholder="e.g. /images/hero-bg.jpg"
+              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+            />
+            {formData.hero?.backgroundImage && (
+              <div className="mt-2">
+                <img 
+                  src={formData.hero.backgroundImage} 
+                  alt="Hero Background Preview"
+                  className="img-thumbnail" 
+                  style={{maxHeight: '100px'}}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
+                  }}
+                />
+              </div>
+            )}
+          </Form.Group>
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render About Section Editor
-  const renderAboutEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-info-circle me-2"></i> About Section
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('about', 'title', 'Section Title')}
-        {renderMultilingualInput('about', 'description1', 'First Paragraph', 'textarea')}
-        {renderMultilingualInput('about', 'description2', 'Second Paragraph', 'textarea')}
-        {renderMultilingualInput('about', 'buttonText', 'Button Text')}
-        
-        <Form.Group className="mb-3">
-          <Form.Label className="fw-bold">About Image URL</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.about.image || ''}
-            onChange={(e) => handleInputChange('about', 'image', e.target.value)}
-            placeholder="e.g. /images/about.jpg"
-            style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-          />
-          {formData.about.image && (
-            <div className="mt-2">
-              <img 
-                src={formData.about.image} 
-                alt="About Image Preview"
-                className="img-thumbnail" 
-                style={{maxHeight: '100px'}}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
-                }}
-              />
-            </div>
-          )}
-        </Form.Group>
-      </Card.Body>
-    </Card>
-  );
+  const renderAboutEditor = () => {
+    if (!formData) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-info-circle me-2"></i> About Section
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('about', 'title', 'Section Title')}
+          {renderMultilingualInput('about', 'description1', 'First Paragraph', 'textarea')}
+          {renderMultilingualInput('about', 'description2', 'Second Paragraph', 'textarea')}
+          {renderMultilingualInput('about', 'buttonText', 'Button Text')}
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">About Image URL</Form.Label>
+            <Form.Control
+              type="text"
+              value={formData.about?.image || ''}
+              onChange={(e) => handleInputChange('about', 'image', e.target.value)}
+              placeholder="e.g. /images/about.jpg"
+              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+            />
+            {formData.about?.image && (
+              <div className="mt-2">
+                <img 
+                  src={formData.about.image} 
+                  alt="About Image Preview"
+                  className="img-thumbnail" 
+                  style={{maxHeight: '100px'}}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
+                  }}
+                />
+              </div>
+            )}
+          </Form.Group>
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Featured Projects Editor
-  const renderFeaturedEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-star me-2"></i> Featured Projects Section
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('featured', 'title', 'Section Title')}
-        {renderMultilingualInput('featured', 'subtitle', 'Section Subtitle')}
-        {renderMultilingualInput('featured', 'viewDetails', 'View Details Button Text')}
-        {renderMultilingualInput('featured', 'viewAll', 'View All Button Text')}
-        
-        <Form.Group className="mb-3">
-          <Form.Label className="fw-bold">Featured Projects</Form.Label>
-          {projects.length === 0 ? (
-            <Alert variant="info">
-              No projects found. <Link to="/admin/projects">Create projects</Link> first to feature them on the home page.
-            </Alert>
-          ) : (
-            <div className="row row-cols-1 row-cols-md-2 g-3 mt-2">
-              {projects.map(project => (
-                <div key={project.id} className="col">
-                  <div className={`card h-100 ${formData.featured.projectIds.includes(project.id) ? 'border-primary' : 'border'}`}>
-                    <div className="card-body d-flex align-items-center p-3" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-                      <Form.Check
-                        type="checkbox"
-                        id={`featured-${project.id}`}
-                        checked={formData.featured.projectIds.includes(project.id)}
-                        onChange={() => handleFeaturedProjectToggle(project.id)}
-                        label={
-                          <span className="ms-2 fw-bold" style={{color: "#333333 !important"}}>
-                            {project.title[currentLanguage] || project.title.en || 'Untitled Project'}
-                            <small className="d-block text-muted" style={{color: "#6c757d !important"}}>
-                              {project.category?.[currentLanguage] || project.category?.en || 'No Category'}
-                            </small>
-                          </span>
-                        }
-                      />
+  const renderFeaturedEditor = () => {
+    if (!formData) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-star me-2"></i> Featured Projects Section
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('featured', 'title', 'Section Title')}
+          {renderMultilingualInput('featured', 'subtitle', 'Section Subtitle')}
+          {renderMultilingualInput('featured', 'viewDetails', 'View Details Button Text')}
+          {renderMultilingualInput('featured', 'viewAll', 'View All Button Text')}
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">Featured Projects</Form.Label>
+            {projects.length === 0 ? (
+              <Alert variant="info">
+                No projects found. <Link to="/admin/projects">Create projects</Link> first to feature them on the home page.
+              </Alert>
+            ) : (
+              <div className="row row-cols-1 row-cols-md-2 g-3 mt-2">
+                {projects.map(project => (
+                  <div key={project.id} className="col">
+                    <div className={`card h-100 ${formData.featured.projectIds.includes(project.id) ? 'border-primary' : 'border'}`}>
+                      <div className="card-body d-flex align-items-center p-3" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                        <Form.Check
+                          type="checkbox"
+                          id={`featured-${project.id}`}
+                          checked={formData.featured.projectIds.includes(project.id)}
+                          onChange={() => handleFeaturedProjectToggle(project.id)}
+                          label={
+                            <span className="ms-2 fw-bold" style={{color: "#333333 !important"}}>
+                              {project.title[currentLanguage] || project.title.en || 'Untitled Project'}
+                              <small className="d-block text-muted" style={{color: "#6c757d !important"}}>
+                                {project.category?.[currentLanguage] || project.category?.en || 'No Category'}
+                              </small>
+                            </span>
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Form.Group>
-      </Card.Body>
-    </Card>
-  );
+                ))}
+              </div>
+            )}
+          </Form.Group>
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Services Section Editor
-  const renderServicesEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-cogs me-2"></i> Services Section
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('services', 'title', 'Section Title')}
-        {renderMultilingualInput('services', 'subtitle', 'Section Subtitle')}
-        
-        <h6 className="mt-4 mb-3">Service Items</h6>
-        
-        {formData.services.items.map((service, index) => (
-          <Card key={index} className="mb-3 border" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-            <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-              <h6 className="mb-0">Service #{index + 1}</h6>
-            </Card.Header>
-            <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">Icon (FontAwesome)</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={service.icon || ''}
-                  onChange={(e) => handleServiceChange(index, 'icon', null, e.target.value)}
-                  placeholder="e.g. fas fa-building"
-                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-                />
-                {service.icon && (
-                  <div className="mt-2">
-                    <i className={`${service.icon} fa-2x text-primary`}></i>
-                  </div>
-                )}
-              </Form.Group>
-              
-              {languages.map(lang => (
-                <div key={lang} className="mb-3">
-                  <Form.Label className="fw-bold">{lang.toUpperCase()} Title</Form.Label>
+  const renderServicesEditor = () => {
+    if (!formData) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-cogs me-2"></i> Services Section
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('services', 'title', 'Section Title')}
+          {renderMultilingualInput('services', 'subtitle', 'Section Subtitle')}
+          
+          <h6 className="mt-4 mb-3">Service Items</h6>
+          
+          {formData.services.items.map((service, index) => (
+            <Card key={index} className="mb-3 border" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+              <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+                <h6 className="mb-0">Service #{index + 1}</h6>
+              </Card.Header>
+              <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">Icon (FontAwesome)</Form.Label>
                   <Form.Control
                     type="text"
-                    value={service.title[lang] || ''}
-                    onChange={(e) => handleServiceChange(index, 'title', lang, e.target.value)}
+                    value={service.icon || ''}
+                    onChange={(e) => handleServiceChange(index, 'icon', null, e.target.value)}
+                    placeholder="e.g. fas fa-building"
                     style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
                   />
-                </div>
-              ))}
-              
-              {languages.map(lang => (
-                <div key={lang} className="mb-3">
-                  <Form.Label className="fw-bold">{lang.toUpperCase()} Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    value={service.description[lang] || ''}
-                    onChange={(e) => handleServiceChange(index, 'description', lang, e.target.value)}
-                    style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-                  />
-                </div>
-              ))}
-            </Card.Body>
-          </Card>
-        ))}
-      </Card.Body>
-    </Card>
-  );
+                  {service.icon && (
+                    <div className="mt-2">
+                      <i className={`${service.icon} fa-2x text-primary`}></i>
+                    </div>
+                  )}
+                </Form.Group>
+                
+                {languages.map(lang => (
+                  <div key={lang} className="mb-3">
+                    <Form.Label className="fw-bold">{lang.toUpperCase()} Title</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={service.title[lang] || ''}
+                      onChange={(e) => handleServiceChange(index, 'title', lang, e.target.value)}
+                      style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                    />
+                  </div>
+                ))}
+                
+                {languages.map(lang => (
+                  <div key={lang} className="mb-3">
+                    <Form.Label className="fw-bold">{lang.toUpperCase()} Description</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      value={service.description[lang] || ''}
+                      onChange={(e) => handleServiceChange(index, 'description', lang, e.target.value)}
+                      style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                    />
+                  </div>
+                ))}
+              </Card.Body>
+            </Card>
+          ))}
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Call-to-Action Section Editor
-  const renderCtaEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-bullhorn me-2"></i> Call to Action Section
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('cta', 'title', 'CTA Title')}
-        {renderMultilingualInput('cta', 'subtitle', 'CTA Subtitle')}
-        {renderMultilingualInput('cta', 'buttonText', 'Button Text')}
-      </Card.Body>
-    </Card>
-  );
+  const renderCtaEditor = () => {
+    if (!formData) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-bullhorn me-2"></i> Call to Action Section
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('cta', 'title', 'CTA Title')}
+          {renderMultilingualInput('cta', 'subtitle', 'CTA Subtitle')}
+          {renderMultilingualInput('cta', 'buttonText', 'Button Text')}
+        </Card.Body>
+      </Card>
+    );
+  };
   
   return (
     <div className="home-admin-page">
@@ -507,7 +547,7 @@ const HomeAdmin = () => {
                     <i className="fas fa-info-circle me-1 text-primary"></i> All content fields support multiple languages.
                   </p>
                   <p className="mb-2">
-                    <i className="fas fa-info-circle me-1 text-primary"></i> Changes are saved to local storage and persist across sessions.
+                    <i className="fas fa-info-circle me-1 text-primary"></i> Changes are saved to Firebase and persist across sessions.
                   </p>
                   <p className="mb-0">
                     <i className="fas fa-info-circle me-1 text-primary"></i> For icons, use <a href="https://fontawesome.com/icons" target="_blank" rel="noopener noreferrer">FontAwesome</a> class names.

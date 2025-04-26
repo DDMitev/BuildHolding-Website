@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import HeroSection from '../components/Common/HeroSection';
 import hardcodedProjects from '../data/hardcoded-projects';
-import { projectService } from '../services/api.service';
+import apiService from '../services/api.service';
 import { getHomeContent } from '../firebase/contentService';
-import { getProjects } from '../firebase/projectService';
+import projectService from '../firebase/projectService';
 
 const FeaturedProject = ({ project }) => {
   if (!project) return null;
@@ -101,7 +101,7 @@ const HomePage = () => {
         setLoading(true);
         
         // Get projects from Firebase
-        const allProjects = await getProjects();
+        const allProjects = await projectService.getProjects();
         
         if (allProjects && allProjects.length > 0) {
           console.log("Using projects from Firebase");
@@ -119,7 +119,7 @@ const HomePage = () => {
         }
         
         // If no projects in Firebase, try API as fallback
-        const response = await projectService.getFeatured(4);
+        const response = await apiService.getFeatured(4);
         
         if (response.data && response.data.data && response.data.data.length > 0) {
           console.log("Using featured projects from API");

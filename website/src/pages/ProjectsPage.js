@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import HeroSection from '../components/Common/HeroSection';
-import { getProjects } from '../firebase/projectService';
+import projectService from '../firebase/projectService';
 
 const ProjectCard = ({ project }) => {
   const { t } = useTranslation();
@@ -113,7 +113,7 @@ const ProjectsPage = () => {
       try {
         setLoading(true);
         // Fetch projects from Firebase
-        const projectsData = await getProjects();
+        const projectsData = await projectService.getProjects();
         
         if (projectsData && projectsData.length > 0) {
           console.log("Firebase Projects:", projectsData);

@@ -1,27 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Nav, Tab, Form, Button, Alert } from 'react-bootstrap';
+import { Card, Nav, Tab, Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import * as holdingContentService from '../../services/holdingContentService';
+import { getHoldingContent, saveHoldingContent, defaultHoldingContent } from '../../firebase/contentService';
 
 const OurHoldingAdmin = () => {
   const { t, i18n } = useTranslation();
   const languages = ['en', 'bg', 'ru'];
   const currentLanguage = i18n.language || 'en';
   
-  const [formData, setFormData] = useState(holdingContentService.getHoldingContent());
+  const [formData, setFormData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [activeTab, setActiveTab] = useState('hero');
   const [activeContentTab, setActiveContentTab] = useState('mission'); // For content tabs navigation
   
-  const handleSave = () => {
+  // Load content from Firebase
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        setLoading(true);
+        const content = await getHoldingContent();
+        setFormData(content);
+        console.log("Holding admin content loaded from Firebase:", content);
+      } catch (err) {
+        console.error("Error loading holding content from Firebase:", err);
+        // Use default content as fallback
+        setFormData(defaultHoldingContent);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadContent();
+  }, []);
+  
+  const handleSave = async () => {
     try {
       setSaving(true);
       setSaveSuccess(false);
       setSaveError(null);
       
-      const success = holdingContentService.saveHoldingContent(formData);
+      const success = await saveHoldingContent(formData);
       
       if (success) {
         setSaveSuccess(true);
@@ -40,7 +61,7 @@ const OurHoldingAdmin = () => {
   
   const handleReset = () => {
     if (window.confirm('Are you sure you want to reset all Our Holding page content to default values? This cannot be undone.')) {
-      setFormData(holdingContentService.default.defaultHoldingContent);
+      setFormData({...defaultHoldingContent});
     }
   };
   
@@ -76,35 +97,69 @@ const OurHoldingAdmin = () => {
   };
   
   // Render multilingual input group
-  const renderMultilingualInput = (section, field, label, type = 'text') => (
-    <Form.Group className="mb-3">
-      <Form.Label className="fw-bold">{label}</Form.Label>
-      {languages.map(lang => (
-        <div key={lang} className="input-group mb-2">
-          <span className="input-group-text" style={{backgroundColor: "#e9ecef !important", color: "#333333 !important"}}>
-            {lang.toUpperCase()}
-          </span>
-          {type === 'textarea' ? (
-            <Form.Control
-              as="textarea"
-              rows={3}
-              value={formData[section][field][lang] || ''}
-              onChange={(e) => handleMultilingualChange(section, field, lang, e.target.value)}
-              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-            />
-          ) : (
-            <Form.Control
-              type={type}
-              value={formData[section][field][lang] || ''}
-              onChange={(e) => handleMultilingualChange(section, field, lang, e.target.value)}
-              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-            />
-          )}
-        </div>
-      ))}
-    </Form.Group>
-  );
+  const renderMultilingualInput = (section, field, label, type = 'text') => {
+    if (!formData || !formData[section]) return null;
+    
+    return (
+      <Form.Group className="mb-3">
+        <Form.Label className="fw-bold">{label}</Form.Label>
+        {languages.map(lang => (
+          <InputGroup key={lang} className="mb-2">
+            <InputGroup.Text style={{width: '50px'}}>{lang.toUpperCase()}</InputGroup.Text>
+            {type === 'textarea' ? (
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData[section][field]?.[lang] || ''}
+                onChange={(e) => handleMultilingualChange(section, field, lang, e.target.value)}
+                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+              />
+            ) : (
+              <Form.Control
+                type={type}
+                value={formData[section][field]?.[lang] || ''}
+                onChange={(e) => handleMultilingualChange(section, field, lang, e.target.value)}
+                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+              />
+            )}
+          </InputGroup>
+        ))}
+      </Form.Group>
+    );
+  };
   
+  // Render nested multilingual input
+  const renderNestedMultilingualInput = (section, nestedSection, field, label, type = 'text') => {
+    if (!formData || !formData[section] || !formData[section][nestedSection]) return null;
+    
+    return (
+      <Form.Group className="mb-3">
+        <Form.Label className="fw-bold">{label}</Form.Label>
+        {languages.map(lang => (
+          <InputGroup key={lang} className="mb-2">
+            <InputGroup.Text style={{width: '50px'}}>{lang.toUpperCase()}</InputGroup.Text>
+            {type === 'textarea' ? (
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData[section][nestedSection][field]?.[lang] || ''}
+                onChange={(e) => handleNestedMultilingualChange(section, nestedSection, field, lang, e.target.value)}
+                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+              />
+            ) : (
+              <Form.Control
+                type={type}
+                value={formData[section][nestedSection][field]?.[lang] || ''}
+                onChange={(e) => handleNestedMultilingualChange(section, nestedSection, field, lang, e.target.value)}
+                style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+              />
+            )}
+          </InputGroup>
+        ))}
+      </Form.Group>
+    );
+  };
+
   // Handle simple input change
   const handleInputChange = (section, field, value) => {
     setFormData(prev => ({
@@ -212,200 +267,218 @@ const OurHoldingAdmin = () => {
   };
   
   // Render Hero Section Editor
-  const renderHeroEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-image me-2"></i> Hero Section
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('hero', 'title', 'Hero Title')}
-        {renderMultilingualInput('hero', 'subtitle', 'Hero Subtitle')}
-        
-        <Form.Group className="mb-3">
-          <Form.Label className="fw-bold">Background Image URL</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.hero.backgroundImage || ''}
-            onChange={(e) => handleInputChange('hero', 'backgroundImage', e.target.value)}
-            placeholder="e.g. /images/hero-holding.jpg"
-            style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-          />
-          {formData.hero.backgroundImage && (
-            <div className="mt-2">
-              <img 
-                src={formData.hero.backgroundImage} 
-                alt="Hero Background Preview"
-                className="img-thumbnail" 
-                style={{maxHeight: '100px'}}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
-                }}
-              />
-            </div>
-          )}
-        </Form.Group>
-      </Card.Body>
-    </Card>
-  );
+  const renderHeroEditor = () => {
+    if (!formData || !formData.hero) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-image me-2"></i> Hero Section
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('hero', 'title', 'Hero Title')}
+          {renderMultilingualInput('hero', 'subtitle', 'Hero Subtitle')}
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">Background Image URL</Form.Label>
+            <Form.Control
+              type="text"
+              value={formData.hero.backgroundImage || ''}
+              onChange={(e) => handleInputChange('hero', 'backgroundImage', e.target.value)}
+              placeholder="e.g. /images/hero-holding.jpg"
+              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+            />
+            {formData.hero.backgroundImage && (
+              <div className="mt-2">
+                <img 
+                  src={formData.hero.backgroundImage} 
+                  alt="Hero Background Preview"
+                  className="img-thumbnail" 
+                  style={{maxHeight: '100px'}}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
+                  }}
+                />
+              </div>
+            )}
+          </Form.Group>
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Overview Section Editor
-  const renderOverviewEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-info-circle me-2"></i> Company Overview
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('overview', 'title', 'Section Title')}
-        {renderMultilingualInput('overview', 'description', 'Company Description', 'textarea')}
-        
-        <Form.Group className="mb-3">
-          <Form.Label className="fw-bold">Overview Image URL</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.overview.image || ''}
-            onChange={(e) => handleInputChange('overview', 'image', e.target.value)}
-            placeholder="e.g. /images/about.jpg"
-            style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-          />
-          {formData.overview.image && (
-            <div className="mt-2">
-              <img 
-                src={formData.overview.image} 
-                alt="Overview Image Preview"
-                className="img-thumbnail" 
-                style={{maxHeight: '100px'}}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
-                }}
-              />
-            </div>
-          )}
-        </Form.Group>
-      </Card.Body>
-    </Card>
-  );
+  const renderOverviewEditor = () => {
+    if (!formData || !formData.overview) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-info-circle me-2"></i> Company Overview
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('overview', 'title', 'Section Title')}
+          {renderMultilingualInput('overview', 'description', 'Company Description', 'textarea')}
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">Overview Image URL</Form.Label>
+            <Form.Control
+              type="text"
+              value={formData.overview.image || ''}
+              onChange={(e) => handleInputChange('overview', 'image', e.target.value)}
+              placeholder="e.g. /images/about.jpg"
+              style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+            />
+            {formData.overview.image && (
+              <div className="mt-2">
+                <img 
+                  src={formData.overview.image} 
+                  alt="Overview Image Preview"
+                  className="img-thumbnail" 
+                  style={{maxHeight: '100px'}}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://via.placeholder.com/400x200?text=Image+Not+Found";
+                  }}
+                />
+              </div>
+            )}
+          </Form.Group>
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Core Values Editor
-  const renderValuesEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-award me-2"></i> Core Values
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('values', 'title', 'Section Title')}
-        
-        <h6 className="mt-4 mb-3">Core Values</h6>
-        
-        {formData.values.items.map((value, index) => (
-          <Card key={index} className="mb-3 border" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-            <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-              <h6 className="mb-0">Value #{index + 1}: {value.title[currentLanguage] || value.title.en}</h6>
-            </Card.Header>
-            <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">Icon (FontAwesome)</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={value.icon || ''}
-                  onChange={(e) => handleValueChange(index, 'icon', null, e.target.value)}
-                  placeholder="e.g. fas fa-handshake"
-                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-                />
-                {value.icon && (
-                  <div className="mt-2">
-                    <i className={`${value.icon} fa-2x text-primary`}></i>
-                  </div>
-                )}
-              </Form.Group>
-              
-              {languages.map(lang => (
-                <div key={lang} className="mb-3">
-                  <Form.Label className="fw-bold">{lang.toUpperCase()} Title</Form.Label>
+  const renderValuesEditor = () => {
+    if (!formData || !formData.values) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-award me-2"></i> Core Values
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('values', 'title', 'Section Title')}
+          
+          <h6 className="mt-4 mb-3">Core Values</h6>
+          
+          {formData.values.items.map((value, index) => (
+            <Card key={index} className="mb-3 border" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+              <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+                <h6 className="mb-0">Value #{index + 1}: {value.title[currentLanguage] || value.title.en}</h6>
+              </Card.Header>
+              <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">Icon (FontAwesome)</Form.Label>
                   <Form.Control
                     type="text"
-                    value={value.title[lang] || ''}
-                    onChange={(e) => handleValueChange(index, 'title', lang, e.target.value)}
+                    value={value.icon || ''}
+                    onChange={(e) => handleValueChange(index, 'icon', null, e.target.value)}
+                    placeholder="e.g. fas fa-handshake"
                     style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
                   />
-                </div>
-              ))}
-              
-              {languages.map(lang => (
-                <div key={lang} className="mb-3">
-                  <Form.Label className="fw-bold">{lang.toUpperCase()} Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    value={value.description[lang] || ''}
-                    onChange={(e) => handleValueChange(index, 'description', lang, e.target.value)}
-                    style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-                  />
-                </div>
-              ))}
-            </Card.Body>
-          </Card>
-        ))}
-      </Card.Body>
-    </Card>
-  );
+                  {value.icon && (
+                    <div className="mt-2">
+                      <i className={`${value.icon} fa-2x text-primary`}></i>
+                    </div>
+                  )}
+                </Form.Group>
+                
+                {languages.map(lang => (
+                  <div key={lang} className="mb-3">
+                    <Form.Label className="fw-bold">{lang.toUpperCase()} Title</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={value.title?.[lang] || ''}
+                      onChange={(e) => handleValueChange(index, 'title', lang, e.target.value)}
+                      style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                    />
+                  </div>
+                ))}
+                
+                {languages.map(lang => (
+                  <div key={lang} className="mb-3">
+                    <Form.Label className="fw-bold">{lang.toUpperCase()} Description</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      value={value.description?.[lang] || ''}
+                      onChange={(e) => handleValueChange(index, 'description', lang, e.target.value)}
+                      style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                    />
+                  </div>
+                ))}
+              </Card.Body>
+            </Card>
+          ))}
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Statistics Editor
-  const renderStatsEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-chart-bar me-2"></i> Company Statistics
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('stats', 'title', 'Section Title')}
-        
-        <h6 className="mt-4 mb-3">Statistics</h6>
-        
-        {formData.stats.items.map((stat, index) => (
-          <Card key={index} className="mb-3 border" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-            <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-              <h6 className="mb-0">Statistic #{index + 1}</h6>
-            </Card.Header>
-            <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">Number Value</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={stat.number || 0}
-                  onChange={(e) => handleStatChange(index, 'number', null, e.target.value)}
-                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-                />
-              </Form.Group>
-              
-              {languages.map(lang => (
-                <div key={lang} className="mb-3">
-                  <Form.Label className="fw-bold">{lang.toUpperCase()} Label</Form.Label>
+  const renderStatsEditor = () => {
+    if (!formData || !formData.stats) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-chart-bar me-2"></i> Company Statistics
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('stats', 'title', 'Section Title')}
+          
+          <h6 className="mt-4 mb-3">Statistics</h6>
+          
+          {formData.stats.items.map((stat, index) => (
+            <Card key={index} className="mb-3 border" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+              <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+                <h6 className="mb-0">Statistic #{index + 1}</h6>
+              </Card.Header>
+              <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">Number Value</Form.Label>
                   <Form.Control
-                    type="text"
-                    value={stat.label[lang] || ''}
-                    onChange={(e) => handleStatChange(index, 'label', lang, e.target.value)}
+                    type="number"
+                    value={stat.number || 0}
+                    onChange={(e) => handleStatChange(index, 'number', null, e.target.value)}
                     style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
                   />
-                </div>
-              ))}
-            </Card.Body>
-          </Card>
-        ))}
-      </Card.Body>
-    </Card>
-  );
+                </Form.Group>
+                
+                {languages.map(lang => (
+                  <div key={lang} className="mb-3">
+                    <Form.Label className="fw-bold">{lang.toUpperCase()} Label</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={stat.label?.[lang] || ''}
+                      onChange={(e) => handleStatChange(index, 'label', lang, e.target.value)}
+                      style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                    />
+                  </div>
+                ))}
+              </Card.Body>
+            </Card>
+          ))}
+        </Card.Body>
+      </Card>
+    );
+  };
   
   // Render Tabs Editor
   const renderTabsEditor = () => {
+    if (!formData || !formData.tabs) return <div className="text-center p-5">Loading content...</div>;
+    
     const tabKeys = Object.keys(formData.tabs);
     
     return (
@@ -473,7 +546,7 @@ const OurHoldingAdmin = () => {
                       </span>
                       <Form.Control
                         type="text"
-                        value={formData.tabs[tabKey].title[lang] || ''}
+                        value={formData.tabs[tabKey].title?.[lang] || ''}
                         onChange={(e) => handleNestedMultilingualChange('tabs', tabKey, 'title', lang, e.target.value)}
                         placeholder={`${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)} title in ${lang.toUpperCase()}`}
                         style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
@@ -495,7 +568,7 @@ const OurHoldingAdmin = () => {
                       <Form.Control
                         as="textarea"
                         rows={6}
-                        value={formData.tabs[tabKey].content[lang] || ''}
+                        value={formData.tabs[tabKey].content?.[lang] || ''}
                         onChange={(e) => handleNestedMultilingualChange('tabs', tabKey, 'content', lang, e.target.value)}
                         style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
                       />
@@ -512,89 +585,93 @@ const OurHoldingAdmin = () => {
   };
   
   // Render Team Editor
-  const renderTeamEditor = () => (
-    <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-      <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-        <h5 className="mb-0">
-          <i className="fas fa-users me-2"></i> Leadership Team
-        </h5>
-      </Card.Header>
-      <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-        {renderMultilingualInput('team', 'title', 'Section Title')}
-        
-        <h6 className="mt-4 mb-3">Team Members</h6>
-        
-        {formData.team.members.map((member, index) => (
-          <Card key={index} className="mb-3 border" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-            <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
-              <h6 className="mb-0">Team Member: {member.name}</h6>
-            </Card.Header>
-            <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">Full Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={member.name || ''}
-                  onChange={(e) => handleTeamMemberChange(index, 'name', null, e.target.value)}
-                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-                />
-              </Form.Group>
-              
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">Profile Image URL</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={member.image || ''}
-                  onChange={(e) => handleTeamMemberChange(index, 'image', null, e.target.value)}
-                  placeholder="e.g. /images/team/member1.jpg"
-                  style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
-                />
-                {member.image && (
-                  <div className="mt-2">
-                    <img 
-                      src={member.image} 
-                      alt={`${member.name} Preview`}
-                      className="img-thumbnail" 
-                      style={{maxHeight: '100px'}}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/400x400?text=Image+Not+Found";
-                      }}
-                    />
-                  </div>
-                )}
-              </Form.Group>
-              
-              {languages.map(lang => (
-                <div key={lang} className="mb-3">
-                  <Form.Label className="fw-bold">{lang.toUpperCase()} Position Title</Form.Label>
+  const renderTeamEditor = () => {
+    if (!formData || !formData.team) return <div className="text-center p-5">Loading content...</div>;
+    
+    return (
+      <Card className="mb-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+        <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+          <h5 className="mb-0">
+            <i className="fas fa-users me-2"></i> Leadership Team
+          </h5>
+        </Card.Header>
+        <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+          {renderMultilingualInput('team', 'title', 'Section Title')}
+          
+          <h6 className="mt-4 mb-3">Team Members</h6>
+          
+          {formData.team.members.map((member, index) => (
+            <Card key={index} className="mb-3 border" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+              <Card.Header style={{backgroundColor: "#f8f9fa !important", color: "#333333 !important"}}>
+                <h6 className="mb-0">Team Member: {member.name}</h6>
+              </Card.Header>
+              <Card.Body style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">Full Name</Form.Label>
                   <Form.Control
                     type="text"
-                    value={member.position[lang] || ''}
-                    onChange={(e) => handleTeamMemberChange(index, 'position', lang, e.target.value)}
+                    value={member.name || ''}
+                    onChange={(e) => handleTeamMemberChange(index, 'name', null, e.target.value)}
                     style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
                   />
-                </div>
-              ))}
-              
-              {languages.map(lang => (
-                <div key={lang} className="mb-3">
-                  <Form.Label className="fw-bold">{lang.toUpperCase()} Biography</Form.Label>
+                </Form.Group>
+                
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">Profile Image URL</Form.Label>
                   <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={member.bio[lang] || ''}
-                    onChange={(e) => handleTeamMemberChange(index, 'bio', lang, e.target.value)}
+                    type="text"
+                    value={member.image || ''}
+                    onChange={(e) => handleTeamMemberChange(index, 'image', null, e.target.value)}
+                    placeholder="e.g. /images/team/member1.jpg"
                     style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
                   />
-                </div>
-              ))}
-            </Card.Body>
-          </Card>
-        ))}
-      </Card.Body>
-    </Card>
-  );
+                  {member.image && (
+                    <div className="mt-2">
+                      <img 
+                        src={member.image} 
+                        alt={`${member.name} Preview`}
+                        className="img-thumbnail" 
+                        style={{maxHeight: '100px'}}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://via.placeholder.com/400x400?text=Image+Not+Found";
+                        }}
+                      />
+                    </div>
+                  )}
+                </Form.Group>
+                
+                {languages.map(lang => (
+                  <div key={lang} className="mb-3">
+                    <Form.Label className="fw-bold">{lang.toUpperCase()} Position Title</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={member.position?.[lang] || ''}
+                      onChange={(e) => handleTeamMemberChange(index, 'position', lang, e.target.value)}
+                      style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                    />
+                  </div>
+                ))}
+                
+                {languages.map(lang => (
+                  <div key={lang} className="mb-3">
+                    <Form.Label className="fw-bold">{lang.toUpperCase()} Biography</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={member.bio?.[lang] || ''}
+                      onChange={(e) => handleTeamMemberChange(index, 'bio', lang, e.target.value)}
+                      style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}
+                    />
+                  </div>
+                ))}
+              </Card.Body>
+            </Card>
+          ))}
+        </Card.Body>
+      </Card>
+    );
+  };
   
   return (
     <div className="our-holding-admin-page">
@@ -644,115 +721,123 @@ const OurHoldingAdmin = () => {
           </Alert>
         )}
         
-        <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
-          <div className="row">
-            <div className="col-md-3 mb-4">
-              <div className="card" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-                <div className="card-header bg-primary" style={{backgroundColor: "#0d6efd !important", color: "#ffffff !important"}}>
-                  <h5 className="mb-0">Page Sections</h5>
+        {loading ? (
+          <div className="text-center">
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : (
+          <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
+            <div className="row">
+              <div className="col-md-3 mb-4">
+                <div className="card" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                  <div className="card-header bg-primary" style={{backgroundColor: "#0d6efd !important", color: "#ffffff !important"}}>
+                    <h5 className="mb-0">Page Sections</h5>
+                  </div>
+                  <div className="card-body p-0" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                    <Nav variant="pills" className="flex-column">
+                      <Nav.Item>
+                        <Nav.Link 
+                          eventKey="hero" 
+                          className={activeTab === "hero" ? "active" : ""}
+                          style={activeTab === "hero" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
+                        >
+                          <i className="fas fa-image me-2"></i> Hero Section
+                        </Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
+                        <Nav.Link 
+                          eventKey="overview" 
+                          className={activeTab === "overview" ? "active" : ""}
+                          style={activeTab === "overview" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
+                        >
+                          <i className="fas fa-info-circle me-2"></i> Company Overview
+                        </Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
+                        <Nav.Link 
+                          eventKey="values" 
+                          className={activeTab === "values" ? "active" : ""}
+                          style={activeTab === "values" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
+                        >
+                          <i className="fas fa-award me-2"></i> Core Values
+                        </Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
+                        <Nav.Link 
+                          eventKey="stats" 
+                          className={activeTab === "stats" ? "active" : ""}
+                          style={activeTab === "stats" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
+                        >
+                          <i className="fas fa-chart-bar me-2"></i> Statistics
+                        </Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
+                        <Nav.Link 
+                          eventKey="tabs" 
+                          className={activeTab === "tabs" ? "active" : ""}
+                          style={activeTab === "tabs" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
+                        >
+                          <i className="fas fa-folder-open me-2"></i> Content Tabs
+                        </Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
+                        <Nav.Link 
+                          eventKey="team" 
+                          className={activeTab === "team" ? "active" : ""}
+                          style={activeTab === "team" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
+                        >
+                          <i className="fas fa-users me-2"></i> Leadership Team
+                        </Nav.Link>
+                      </Nav.Item>
+                    </Nav>
+                  </div>
                 </div>
-                <div className="card-body p-0" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-                  <Nav variant="pills" className="flex-column">
-                    <Nav.Item>
-                      <Nav.Link 
-                        eventKey="hero" 
-                        className={activeTab === "hero" ? "active" : ""}
-                        style={activeTab === "hero" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
-                      >
-                        <i className="fas fa-image me-2"></i> Hero Section
-                      </Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link 
-                        eventKey="overview" 
-                        className={activeTab === "overview" ? "active" : ""}
-                        style={activeTab === "overview" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
-                      >
-                        <i className="fas fa-info-circle me-2"></i> Company Overview
-                      </Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link 
-                        eventKey="values" 
-                        className={activeTab === "values" ? "active" : ""}
-                        style={activeTab === "values" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
-                      >
-                        <i className="fas fa-award me-2"></i> Core Values
-                      </Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link 
-                        eventKey="stats" 
-                        className={activeTab === "stats" ? "active" : ""}
-                        style={activeTab === "stats" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
-                      >
-                        <i className="fas fa-chart-bar me-2"></i> Statistics
-                      </Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link 
-                        eventKey="tabs" 
-                        className={activeTab === "tabs" ? "active" : ""}
-                        style={activeTab === "tabs" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
-                      >
-                        <i className="fas fa-folder-open me-2"></i> Content Tabs
-                      </Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link 
-                        eventKey="team" 
-                        className={activeTab === "team" ? "active" : ""}
-                        style={activeTab === "team" ? {backgroundColor: "#0d6efd !important", color: "#ffffff !important"} : {color: "#333333 !important"}}
-                      >
-                        <i className="fas fa-users me-2"></i> Leadership Team
-                      </Nav.Link>
-                    </Nav.Item>
-                  </Nav>
+                
+                <div className="card mt-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                  <div className="card-header bg-secondary" style={{backgroundColor: "#6c757d !important", color: "#ffffff !important"}}>
+                    <h5 className="mb-0">Tips</h5>
+                  </div>
+                  <div className="card-body" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
+                    <p className="mb-2">
+                      <i className="fas fa-info-circle me-1 text-primary"></i> All content fields support multiple languages.
+                    </p>
+                    <p className="mb-2">
+                      <i className="fas fa-info-circle me-1 text-primary"></i> Changes are saved to Firebase and persist across sessions.
+                    </p>
+                    <p className="mb-0">
+                      <i className="fas fa-info-circle me-1 text-primary"></i> For icons, use <a href="https://fontawesome.com/icons" target="_blank" rel="noopener noreferrer">FontAwesome</a> class names.
+                    </p>
+                  </div>
                 </div>
               </div>
               
-              <div className="card mt-4" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-                <div className="card-header bg-secondary" style={{backgroundColor: "#6c757d !important", color: "#ffffff !important"}}>
-                  <h5 className="mb-0">Tips</h5>
-                </div>
-                <div className="card-body" style={{backgroundColor: "#ffffff !important", color: "#333333 !important"}}>
-                  <p className="mb-2">
-                    <i className="fas fa-info-circle me-1 text-primary"></i> All content fields support multiple languages.
-                  </p>
-                  <p className="mb-2">
-                    <i className="fas fa-info-circle me-1 text-primary"></i> Changes are saved to local storage and persist across sessions.
-                  </p>
-                  <p className="mb-0">
-                    <i className="fas fa-info-circle me-1 text-primary"></i> For icons, use <a href="https://fontawesome.com/icons" target="_blank" rel="noopener noreferrer">FontAwesome</a> class names.
-                  </p>
-                </div>
+              <div className="col-md-9">
+                <Tab.Content>
+                  <Tab.Pane eventKey="hero">
+                    {renderHeroEditor()}
+                  </Tab.Pane>
+                  <Tab.Pane eventKey="overview">
+                    {renderOverviewEditor()}
+                  </Tab.Pane>
+                  <Tab.Pane eventKey="values">
+                    {renderValuesEditor()}
+                  </Tab.Pane>
+                  <Tab.Pane eventKey="stats">
+                    {renderStatsEditor()}
+                  </Tab.Pane>
+                  <Tab.Pane eventKey="tabs">
+                    {renderTabsEditor()}
+                  </Tab.Pane>
+                  <Tab.Pane eventKey="team">
+                    {renderTeamEditor()}
+                  </Tab.Pane>
+                </Tab.Content>
               </div>
             </div>
-            
-            <div className="col-md-9">
-              <Tab.Content>
-                <Tab.Pane eventKey="hero">
-                  {renderHeroEditor()}
-                </Tab.Pane>
-                <Tab.Pane eventKey="overview">
-                  {renderOverviewEditor()}
-                </Tab.Pane>
-                <Tab.Pane eventKey="values">
-                  {renderValuesEditor()}
-                </Tab.Pane>
-                <Tab.Pane eventKey="stats">
-                  {renderStatsEditor()}
-                </Tab.Pane>
-                <Tab.Pane eventKey="tabs">
-                  {renderTabsEditor()}
-                </Tab.Pane>
-                <Tab.Pane eventKey="team">
-                  {renderTeamEditor()}
-                </Tab.Pane>
-              </Tab.Content>
-            </div>
-          </div>
-        </Tab.Container>
+          </Tab.Container>
+        )}
       </div>
     </div>
   );

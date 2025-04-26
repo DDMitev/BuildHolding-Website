@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, Button, Alert } from 'react-bootstrap';
-import { getProjects } from '../../firebase/projectService';
+import projectService from '../../firebase/projectService';
 import { useFirebase } from '../../firebase/FirebaseContext';
 
 const DashboardPage = () => {
@@ -19,7 +19,7 @@ const DashboardPage = () => {
       try {
         setLoading(true);
         // Use Firebase projectService instead of localStorage
-        const allProjects = await getProjects();
+        const allProjects = await projectService.getProjects();
         
         if (allProjects && allProjects.length > 0) {
           // Take the most recent 5 projects

@@ -6,7 +6,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { subscribeToAuthChanges, getUserRole, isAdmin } from './authService';
-import { initializeFirestoreProjects } from './projectService';
+// Remove import for projectService to break circular dependency
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from './config';
 
 // Create context
 const FirebaseContext = createContext(null);
@@ -58,11 +60,15 @@ export const FirebaseProvider = ({ children }) => {
       try {
         setLoading(true);
         
-        // Initialize projects
-        await initializeFirestoreProjects();
+        // Check if collections exist and initialize if needed
+        // We're doing this directly here rather than through projectService
+        // to avoid circular dependencies
+        const projectsCollection = collection(db, 'projects');
+        const projectsSnap = await getDocs(projectsCollection);
         
-        // TODO: Initialize other content if needed
-        // This could include initializing home content, contact content, etc.
+        if (projectsSnap.empty) {
+          console.log('Projects collection is empty - will be initialized by projectService');
+        }
         
         setInitialized(true);
       } catch (error) {
