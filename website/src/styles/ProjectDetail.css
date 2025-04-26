@@ -1,0 +1,119 @@
+/* Project Detail Page Custom Styles */
+
+/* Timeline styles */
+.timeline-wrapper {
+  position: relative;
+  padding: 2rem 0;
+}
+
+.timeline-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 20px;
+  width: 4px;
+  background-color: #e9ecef;
+  z-index: 0;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+  padding-left: 3rem;
+}
+
+.timeline-badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 40px;
+  color: white;
+  z-index: 1;
+}
+
+.timeline-badge i {
+  line-height: 40px;
+}
+
+.timeline-panel {
+  position: relative;
+  padding: 1.25rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.timeline-panel::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 15px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid #f8f9fa;
+}
+
+.timeline-heading h4 {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.timeline-body p {
+  margin-bottom: 0;
+}
+
+/* Project gallery thumbnail slider */
+.thumbnail-slider {
+  margin-top: 10px;
+}
+
+.thumbnail {
+  padding: 5px;
+  transition: all 0.2s ease;
+}
+
+.thumbnail.active {
+  transform: scale(1.05);
+}
+
+/* Specification and detail cards */
+.specification-card {
+  background-color: #f9f9f9;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+.specification-title {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.specification-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.specification-item {
+  margin-bottom: 0.5rem;
+  display: flex;
+}
+
+.specification-label {
+  font-weight: 500;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.specification-value {
+  flex-grow: 1;
+}

@@ -13,8 +13,16 @@ const ProjectCard = ({ project }) => {
     // Define a guaranteed image URL
     let url = "https://via.placeholder.com/600x400?text=BuildHolding+Project";
     
-    // Try to get an image from the project
-    if (project?.images && project.images[0]?.url && project.images[0].url.startsWith('http')) {
+    // Try to get an image from the project (prioritize gallery)
+    if (project?.gallery && Array.isArray(project.gallery) && project.gallery.length > 0) {
+      // Use the first gallery image as thumbnail
+      const firstGalleryImage = project.gallery[0];
+      if (typeof firstGalleryImage === 'string' && firstGalleryImage.startsWith('http')) {
+        url = firstGalleryImage;
+      }
+    } 
+    // Legacy fallbacks
+    else if (project?.images && project.images[0]?.url && project.images[0].url.startsWith('http')) {
       url = project.images[0].url;
     } else if (project?.mainImageUrl && project.mainImageUrl.startsWith('http')) {
       url = project.mainImageUrl;

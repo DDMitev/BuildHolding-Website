@@ -1,29 +1,8 @@
 import axios from 'axios';
 
-/**
- * API Service Configuration
- * 
- * This file configures the connection between your frontend and backend API.
- */
-
-// Determine API URL based on environment variables or use a fallback
-let apiUrl = process.env.REACT_APP_API_URL;
-
-// Fallback logic for different environments
-if (!apiUrl) {
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    apiUrl = 'http://localhost:5000/api';
-    console.log('Using local API:', apiUrl);
-  } else {
-    // When deployed on Netlify, connect to Railway backend
-    apiUrl = 'https://buildholding-api.up.railway.app/api';
-    console.log('Using Railway API:', apiUrl);
-  }
-}
-
 // Create axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: apiUrl,
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },

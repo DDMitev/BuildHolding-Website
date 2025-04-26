@@ -183,13 +183,13 @@
   "contact": {
     "title": "Контакты",
     "subtitle": "Свяжитесь с нашей командой",
-    "contactUs": "Свяжитесь с нами",
+    "contactUs": "Связаться с нами",
     "openingHours": "Рабочие часы",
     "followUs": "Подписывайтесь на нас",
     "form": {
       "title": "Отправить сообщение",
       "name": "Имя",
-      "email": "Эл. почта",
+      "email": "Электронная почта",
       "phone": "Телефон",
       "subject": "Тема",
       "message": "Сообщение",
@@ -203,41 +203,6 @@
       "phone": "+359 2 123 4567",
       "email": "info@buildholding.com",
       "hours": "Пн-Пт: 9:00 - 18:00"
-    }
-  },
-  "admin": {
-    "dashboard": {
-      "title": "Панель Администратора",
-      "welcomeTitle": "Добро пожаловать в Админ-панель BuildHolding",
-      "totalProjects": "Всего Проектов",
-      "completedProjects": "Завершенные Проекты",
-      "inProgressProjects": "В Процессе",
-      "plannedProjects": "Запланированные",
-      "recentProjects": "Недавние Проекты"
-    },
-    "login": {
-      "title": "Вход для Администратора",
-      "subtitle": "Введите учетные данные для доступа к панели администратора",
-      "email": "Эл. почта",
-      "password": "Пароль",
-      "signIn": "ВОЙТИ",
-      "signingIn": "Вход...",
-      "invalidCredentials": "Неверные учетные данные. Пожалуйста, попробуйте еще раз."
-    },
-    "nav": {
-      "dashboard": "Панель",
-      "projects": "Проекты",
-      "home": "Главная Страница",
-      "partners": "Партнеры",
-      "clients": "Клиенты",
-      "timeline": "Хронология",
-      "media": "Медиа",
-      "content": "Контент",
-      "logout": "Выход",
-      "profile": "Профиль"
-    },
-    "projects": {
-      "addNew": "Добавить Новый Проект"
     }
   },
   "footer": {

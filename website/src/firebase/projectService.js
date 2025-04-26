@@ -53,6 +53,94 @@ export const initializeFirestoreProjects = async () => {
 };
 
 /**
+ * Helper function to sanitize multilingual objects for safe rendering
+ * Converts potential object fields to safe string values to prevent rendering errors
+ */
+const sanitizeProjectData = (project, preferredLang = 'en') => {
+  if (!project) return null;
+  
+  // Helper to safely extract text from multilingual objects
+  const safeGetText = (obj) => {
+    if (!obj) return '';
+    if (typeof obj !== 'object') return String(obj);
+    if (obj[preferredLang]) return obj[preferredLang];
+    if (obj.en) return obj.en;
+    
+    // Try to find any string value
+    const firstString = Object.values(obj).find(val => typeof val === 'string');
+    return firstString || '';
+  };
+
+  // Deep clone to avoid modifying the original
+  const sanitized = JSON.parse(JSON.stringify(project));
+  
+  // Sanitize potentially problematic multilingual fields
+  const fieldsToSanitize = [
+    'title', 'description', 'shortDescription', 'category', 'client', 
+    'address', 'city', 'country', 'details'
+  ];
+  
+  // Process first level fields
+  fieldsToSanitize.forEach(field => {
+    if (sanitized[field] && typeof sanitized[field] === 'object') {
+      // Store sanitized values in _safe properties
+      sanitized[`${field}_safe`] = safeGetText(sanitized[field]);
+    }
+  });
+  
+  // Handle nested fields - location
+  if (sanitized.location) {
+    sanitized.location_safe = {};
+    
+    if (typeof sanitized.location === 'object') {
+      // Handle address
+      if (sanitized.location.address && typeof sanitized.location.address === 'object') {
+        sanitized.location_safe.address = safeGetText(sanitized.location.address);
+      }
+      
+      // Handle city
+      if (sanitized.location.city && typeof sanitized.location.city === 'object') {
+        sanitized.location_safe.city = safeGetText(sanitized.location.city);
+      }
+      
+      // Handle country
+      if (sanitized.location.country && typeof sanitized.location.country === 'object') {
+        sanitized.location_safe.country = safeGetText(sanitized.location.country);
+      }
+    }
+  }
+  
+  // Handle features array
+  if (sanitized.features && Array.isArray(sanitized.features)) {
+    sanitized.features_safe = sanitized.features.map(feature => {
+      return typeof feature === 'object' ? safeGetText(feature) : String(feature);
+    });
+  }
+  
+  // Handle timeline
+  if (sanitized.timeline && Array.isArray(sanitized.timeline)) {
+    sanitized.timeline_safe = sanitized.timeline.map(item => {
+      if (!item || typeof item !== 'object') return item;
+      
+      return {
+        ...item,
+        title: typeof item.title === 'object' ? safeGetText(item.title) : String(item.title || ''),
+        description: typeof item.description === 'object' ? safeGetText(item.description) : String(item.description || '')
+      };
+    });
+  }
+  
+  // Handle tags
+  if (sanitized.tags && Array.isArray(sanitized.tags)) {
+    sanitized.tags_safe = sanitized.tags.map(tag => {
+      return typeof tag === 'object' ? safeGetText(tag) : String(tag);
+    });
+  }
+  
+  return sanitized;
+};
+
+/**
  * Get all projects from Firestore
  * @returns {Promise<Array>} Array of project objects
  */
@@ -87,7 +175,9 @@ export const getProjectById = async (id) => {
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
+      const projectData = { id: docSnap.id, ...docSnap.data() };
+      // Sanitize the project data to ensure it can be safely rendered
+      return sanitizeProjectData(projectData);
     } else {
       console.log('No such project exists');
       return null;

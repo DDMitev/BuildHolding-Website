@@ -3,15 +3,18 @@ import { Card, Nav, Tab, Form, Button, Alert } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import * as homeContentService from '../../services/homeContentService';
-import * as projectService from '../../services/projectStorage';
+import { getProjects } from '../../firebase/projectService';
+import { useFirebase } from '../../firebase/FirebaseContext';
 
 const HomeAdmin = () => {
   const { t, i18n } = useTranslation();
+  const { currentUser } = useFirebase();
   const languages = ['en', 'bg', 'ru'];
   const currentLanguage = i18n.language || 'en';
   
   const [formData, setFormData] = useState(homeContentService.getHomeContent());
   const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(null);
@@ -19,10 +22,17 @@ const HomeAdmin = () => {
   
   // Load projects for featured projects selection
   useEffect(() => {
-    const loadProjects = () => {
-      const allProjects = projectService.getProjects();
-      if (allProjects && allProjects.length > 0) {
-        setProjects(allProjects);
+    const loadProjects = async () => {
+      try {
+        setLoading(true);
+        const allProjects = await getProjects();
+        if (allProjects && allProjects.length > 0) {
+          setProjects(allProjects);
+        }
+      } catch (error) {
+        console.error('Error loading projects:', error);
+      } finally {
+        setLoading(false);
       }
     };
     

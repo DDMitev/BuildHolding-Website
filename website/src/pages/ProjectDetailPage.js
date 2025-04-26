@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Tab, Nav } from 'react-bootstrap';
@@ -6,21 +6,44 @@ import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { getProjectById } from '../firebase/projectService';
+import '../styles/ProjectDetail.css';
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeSlide, setActiveSlide] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
-  const currentLang = i18n.language || 'en';
+  const [activeSlide, setActiveSlide] = useState(0);
+  const mainSliderRef = useRef(null);
   
   // Get text in current language or fallback to English
   const getText = (textObj) => {
-    if (!textObj) return '';
-    return textObj[currentLang] || textObj.en || '';
+    try {
+      if (!textObj) return '';
+      
+      // Handle string values directly
+      if (typeof textObj === 'string') return textObj;
+      
+      // Handle numbers or other primitives
+      if (typeof textObj !== 'object') return String(textObj);
+      
+      // Handle multilingual object
+      if (textObj[currentLang]) return textObj[currentLang];
+      if (textObj.en) return textObj.en;
+      
+      // Last resort: return the first string value found in the object
+      const firstString = Object.values(textObj).find(val => typeof val === 'string');
+      if (firstString) return firstString;
+      
+      // If nothing works, return empty string
+      return '';
+    } catch (err) {
+      console.warn('Error extracting text:', err);
+      return '';
+    }
   };
   
   // Format date to locale string
@@ -44,6 +67,21 @@ const ProjectDetailPage = () => {
     }).format(amount);
   };
   
+  // Breadcrumb and navigation helper (must be at top level before any returns)
+  const safeProjectTitle = useMemo(() => {
+    if (!project) return '';
+    
+    // Use the safe title from our sanitized project data
+    if (project.title_safe) return project.title_safe;
+    
+    try {
+      return getText(project.title);
+    } catch (error) {
+      console.error("Error getting project title:", error);
+      return "Project";
+    }
+  }, [project]);
+  
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -54,7 +92,16 @@ const ProjectDetailPage = () => {
         
         if (projectData) {
           console.log("Found project in Firebase:", projectData);
-          setProject(projectData);
+          // Make sure all fields that should be objects are objects to prevent rendering errors
+          const safeProject = {
+            ...projectData,
+            // Ensure these fields are objects with language properties
+            title: typeof projectData.title === 'object' ? projectData.title : { en: String(projectData.title || '') },
+            description: typeof projectData.description === 'object' ? projectData.description : { en: String(projectData.description || '') },
+            // Add other critical fields that might cause rendering issues
+            category: typeof projectData.category === 'object' ? projectData.category : { en: String(projectData.category || '') }
+          };
+          setProject(safeProject);
         } else {
           console.error("Project not found in Firebase");
           setError("Project not found");
@@ -102,27 +149,37 @@ const ProjectDetailPage = () => {
   // Get appropriate image URLs based on data structure
   let galleryImages = [];
   
-  // If we have a gallery array of direct URLs (new format)
-  if (project.gallery && Array.isArray(project.gallery)) {
-    galleryImages = project.gallery.map(url => ({ 
-      url: url, 
-      alt: { en: project.title.en, bg: project.title.bg, ru: project.title.ru } 
-    }));
-  } 
-  // Legacy format with images array of objects
-  else if (project.images && Array.isArray(project.images)) {
-    galleryImages = project.images;
-  } 
-  // Fallback to using the main image
-  else {
-    galleryImages = [{ 
-      url: project.image || project.mainImageUrl, 
-      alt: { en: project.title.en, bg: project.title.bg, ru: project.title.ru } 
+  try {
+    // If we have a gallery array (preferred format)
+    if (project.gallery && Array.isArray(project.gallery) && project.gallery.length > 0) {
+      galleryImages = project.gallery.map(url => ({ 
+        url: typeof url === 'string' ? url : '',
+        alt: project.title?.en || "Project Image" 
+      }));
+    } 
+    // Legacy format with images array of objects
+    else if (project.images && Array.isArray(project.images) && project.images.length > 0) {
+      galleryImages = project.images.map(img => ({
+        url: typeof img === 'object' && img.url ? img.url : (typeof img === 'string' ? img : ''),
+        alt: typeof img === 'object' && img.alt ? 
+          (typeof img.alt === 'object' ? (img.alt.en || "Project Image") : String(img.alt || "Project Image")) 
+          : "Project Image"
+      }));
+    } 
+    // Fallback to using a placeholder
+    else {
+      galleryImages = [{ 
+        url: "https://via.placeholder.com/800x500?text=No+Image+Available", 
+        alt: project.title?.en || "Project Image" 
+      }];
+    }
+  } catch (error) {
+    console.error("Error processing gallery images:", error);
+    galleryImages = [{
+      url: "https://via.placeholder.com/800x500?text=Error+Loading+Image",
+      alt: "Project Image"
     }];
   }
-  
-  // Main image - try all possible formats
-  const mainImageUrl = project.image || project.images?.[0]?.url || project.mainImageUrl || '';
   
   // Slider settings for main carousel
   const mainSliderSettings = {
@@ -186,7 +243,7 @@ const ProjectDetailPage = () => {
                 <Link to="/projects" style={{ color: '#007bff' }}>{t('navigation.projects')}</Link>
               </li>
               <li className="breadcrumb-item active" aria-current="page" style={{ color: '#6c757d !important' }}>
-                {getText(project.title)}
+                {safeProjectTitle}
               </li>
             </ol>
           </nav>
@@ -201,12 +258,12 @@ const ProjectDetailPage = () => {
             {/* Main image slider */}
             <div className="main-slider mb-3">
               {galleryImages.length > 0 ? (
-                <Slider {...mainSliderSettings}>
+                <Slider {...mainSliderSettings} ref={mainSliderRef}>
                   {galleryImages.map((image, index) => (
                     <div key={`main-slide-${index}`} className="project-image-main">
                       <img 
                         src={image.url} 
-                        alt={getText(image.alt) || getText(project.title)} 
+                        alt={image.alt} 
                         className="img-fluid rounded shadow"
                         onError={(e) => {
                           e.target.onerror = null;
@@ -221,7 +278,7 @@ const ProjectDetailPage = () => {
                 <div className="project-image-placeholder">
                   <img 
                     src="https://via.placeholder.com/800x500?text=BuildHolding"
-                    alt={getText(project.title)}
+                    alt={safeProjectTitle}
                     className="img-fluid rounded shadow"
                     style={{ width: '100%', height: '500px', objectFit: 'cover' }}
                   />
@@ -241,7 +298,13 @@ const ProjectDetailPage = () => {
                     <div 
                       key={`thumb-${index}`}
                       className={`thumbnail ${activeSlide === index ? 'active' : ''}`}
-                      onClick={() => setActiveSlide(index)}
+                      onClick={() => {
+                        setActiveSlide(index);
+                        // Go to selected slide in main slider
+                        if (mainSliderRef.current) {
+                          mainSliderRef.current.slickGoTo(index);
+                        }
+                      }}
                     >
                       <img 
                         src={image.url} 
@@ -270,7 +333,7 @@ const ProjectDetailPage = () => {
             <div className="card border-0 shadow-sm">
               <div className="card-body">
                 <h1 className="h3 mb-4" style={{ color: '#212529 !important' }}>
-                  {getText(project.title)}
+                  {safeProjectTitle}
                 </h1>
                 
                 <div className="mb-4">
@@ -285,49 +348,69 @@ const ProjectDetailPage = () => {
                   
                   <div className="mt-3">
                     <p className="mb-2">
-                      <strong style={{ color: '#212529 !important' }}>{t('projects.detail.category')}:</strong>{' '}
-                      <span style={{ color: '#6c757d !important' }}>{getText(project.category)}</span>
+                      <strong style={{ color: '#212529 !important' }}>{t('projectDetail.category')}:</strong>{' '}
+                      <span style={{ color: '#6c757d !important' }}>
+                        {project.category_safe || getText(project.category)}
+                      </span>
                     </p>
                     
-                    {project.client && (
+                    {(project.client || project.client_safe) && (
                       <p className="mb-2">
-                        <strong style={{ color: '#212529 !important' }}>{t('projects.detail.client')}:</strong>{' '}
-                        <span style={{ color: '#6c757d !important' }}>{getText(project.client)}</span>
+                        <strong style={{ color: '#212529 !important' }}>{t('projectDetail.client', 'Client')}:</strong>{' '}
+                        <span style={{ color: '#6c757d !important' }}>
+                          {project.client_safe || getText(project.client)}
+                        </span>
                       </p>
                     )}
                     
-                    {project.location && (
+                    {(project.location || project.location_safe) && (
                       <p className="mb-2">
-                        <strong style={{ color: '#212529 !important' }}>{t('projects.detail.location')}:</strong>{' '}
-                        <span style={{ color: '#6c757d !important' }}>{getText(project.location)}</span>
+                        <strong style={{ color: '#212529 !important' }}>{t('projectDetail.location')}:</strong>{' '}
+                        <span style={{ color: '#6c757d !important' }}>
+                          {project.location_safe ? 
+                            `${project.location_safe.city || ''} ${project.location_safe.address || ''} ${project.location_safe.country || ''}`.trim() :
+                            (project.location.address ? 
+                              getText(project.location.address) : 
+                              (project.location.city ? 
+                                `${getText(project.location.city)}, ${getText(project.location.country || '')}` : 
+                                getText(project.location)))}
+                        </span>
                       </p>
                     )}
                     
                     {project.dateStarted && (
                       <p className="mb-2">
-                        <strong style={{ color: '#212529 !important' }}>{t('projects.detail.startDate')}:</strong>{' '}
+                        <strong style={{ color: '#212529 !important' }}>{t('projects.startDate', 'Start Date')}:</strong>{' '}
                         <span style={{ color: '#6c757d !important' }}>{formatDate(project.dateStarted)}</span>
                       </p>
                     )}
                     
                     {project.dateCompleted && (
                       <p className="mb-2">
-                        <strong style={{ color: '#212529 !important' }}>{t('projects.detail.completionDate')}:</strong>{' '}
+                        <strong style={{ color: '#212529 !important' }}>{t('projects.completionDate', 'Completion Date')}:</strong>{' '}
                         <span style={{ color: '#6c757d !important' }}>{formatDate(project.dateCompleted)}</span>
                       </p>
                     )}
                     
                     {project.budget && (
                       <p className="mb-2">
-                        <strong style={{ color: '#212529 !important' }}>{t('projects.detail.budget')}:</strong>{' '}
-                        <span style={{ color: '#6c757d !important' }}>{formatCurrency(project.budget, project.currency || 'BGN')}</span>
+                        <strong style={{ color: '#212529 !important' }}>{t('projects.budget', 'Budget')}:</strong>{' '}
+                        <span style={{ color: '#6c757d !important' }}>
+                          {typeof project.budget === 'object' && project.budget.total ? 
+                            formatCurrency(project.budget.total, project.budget.currency || 'EUR') : 
+                            formatCurrency(project.budget, project.currency || 'BGN')}
+                        </span>
                       </p>
                     )}
                     
                     {project.area && (
                       <p className="mb-2">
-                        <strong style={{ color: '#212529 !important' }}>{t('projects.detail.area')}:</strong>{' '}
-                        <span style={{ color: '#6c757d !important' }}>{project.area} m²</span>
+                        <strong style={{ color: '#212529 !important' }}>{t('projects.projectSize', 'Project Size')}:</strong>{' '}
+                        <span style={{ color: '#6c757d !important' }}>
+                          {typeof project.area === 'object' && project.area.value ? 
+                            `${project.area.value} ${project.area.unit || 'm²'}` : 
+                            `${project.area} m²`}
+                        </span>
                       </p>
                     )}
                   </div>
@@ -335,7 +418,7 @@ const ProjectDetailPage = () => {
                 
                 {project.tags && project.tags.length > 0 && (
                   <div className="mb-4">
-                    <h3 className="h6 mb-3" style={{ color: '#212529 !important' }}>{t('projects.detail.tags')}</h3>
+                    <h3 className="h6 mb-3" style={{ color: '#212529 !important' }}>{t('projects.keyFeatures', 'Features')}</h3>
                     <div>
                       {project.tags.map((tag, index) => (
                         <span 
@@ -343,7 +426,7 @@ const ProjectDetailPage = () => {
                           className="badge bg-light text-dark me-2 mb-2"
                           style={{ color: '#6c757d !important', backgroundColor: '#f8f9fa !important' }}
                         >
-                          {tag}
+                          {getText(tag)}
                         </span>
                       ))}
                     </div>
@@ -352,7 +435,7 @@ const ProjectDetailPage = () => {
                 
                 <div className="d-grid gap-2">
                   <Link to="/contact" className="btn btn-primary">
-                    {t('projects.detail.contactUs')}
+                    {t('projects.contactUs', 'Contact Us')}
                   </Link>
                 </div>
               </div>
@@ -373,21 +456,34 @@ const ProjectDetailPage = () => {
                     borderColor: activeTab === 'overview' ? '#dee2e6 #dee2e6 #fff' : 'transparent'
                   }}
                 >
-                  {t('projects.detail.tabs.overview')}
+                  {t('projects.tabs.overview')}
                 </Nav.Link>
               </Nav.Item>
               
-              {project.details && (
+              <Nav.Item>
+                <Nav.Link 
+                  eventKey="details"
+                  className={activeTab === 'details' ? 'active' : ''}
+                  style={{ 
+                    color: activeTab === 'details' ? '#007bff !important' : '#6c757d !important',
+                    borderColor: activeTab === 'details' ? '#dee2e6 #dee2e6 #fff' : 'transparent'
+                  }}
+                >
+                  {t('projects.details', 'Details')}
+                </Nav.Link>
+              </Nav.Item>
+              
+              {project.timeline && project.timeline.length > 0 && (
                 <Nav.Item>
                   <Nav.Link 
-                    eventKey="details"
-                    className={activeTab === 'details' ? 'active' : ''}
+                    eventKey="timeline"
+                    className={activeTab === 'timeline' ? 'active' : ''}
                     style={{ 
-                      color: activeTab === 'details' ? '#007bff !important' : '#6c757d !important',
-                      borderColor: activeTab === 'details' ? '#dee2e6 #dee2e6 #fff' : 'transparent'
+                      color: activeTab === 'timeline' ? '#007bff !important' : '#6c757d !important',
+                      borderColor: activeTab === 'timeline' ? '#dee2e6 #dee2e6 #fff' : 'transparent'
                     }}
                   >
-                    {t('projects.detail.tabs.details')}
+                    {t('projects.tabs.timeline')}
                   </Nav.Link>
                 </Nav.Item>
               )}
@@ -402,7 +498,7 @@ const ProjectDetailPage = () => {
                       borderColor: activeTab === 'features' ? '#dee2e6 #dee2e6 #fff' : 'transparent'
                     }}
                   >
-                    {t('projects.detail.tabs.features')}
+                    {t('projects.tabs.features')}
                   </Nav.Link>
                 </Nav.Item>
               )}
@@ -411,44 +507,133 @@ const ProjectDetailPage = () => {
             <Tab.Content>
               <Tab.Pane eventKey="overview">
                 <div className="bg-white p-4 rounded shadow-sm">
-                  <h2 className="h4 mb-4" style={{ color: '#212529 !important' }}>{t('projects.detail.projectOverview')}</h2>
+                  <h2 className="h4 mb-4" style={{ color: '#212529 !important' }}>{t('projects.projectDescription', 'Project Description')}</h2>
                   <div 
                     className="project-description"
-                    dangerouslySetInnerHTML={{ __html: getText(project.description) }}
+                    dangerouslySetInnerHTML={{ __html: project.description_safe || getText(project.description) }}
                   />
                 </div>
               </Tab.Pane>
               
-              {project.details && (
-                <Tab.Pane eventKey="details">
-                  <div className="bg-white p-4 rounded shadow-sm">
-                    <h2 className="h4 mb-4" style={{ color: '#212529 !important' }}>{t('projects.detail.projectDetails')}</h2>
+              <Tab.Pane eventKey="details">
+                <div className="bg-white p-4 rounded shadow-sm">
+                  <h2 className="h4 mb-4" style={{ color: '#212529 !important' }}>{t('projects.projectDetails', 'Project Details')}</h2>
+                  
+                  {/* Display structured details if available */}
+                  <div className="row">
+                    {project.specifications && (
+                      <div className="col-md-6 mb-4">
+                        <h5 className="mb-3">{t('projects.specifications', 'Specifications')}</h5>
+                        <ul className="list-group list-group-flush">
+                          {project.specifications.size && (
+                            <li className="list-group-item border-0 px-0">
+                              <strong>{t('projects.projectSize', 'Size')}:</strong> {project.specifications.size.value} {project.specifications.size.unit}
+                            </li>
+                          )}
+                          {project.specifications.capacity && (
+                            <li className="list-group-item border-0 px-0">
+                              <strong>{t('projects.capacity', 'Capacity')}:</strong> {project.specifications.capacity.value} {project.specifications.capacity.unit}
+                            </li>
+                          )}
+                          {project.specifications.sustainability && project.specifications.sustainability.features && (
+                            <li className="list-group-item border-0 px-0">
+                              <strong>{t('projects.sustainabilityFeatures', 'Sustainability')}:</strong><br />
+                              <ul className="mt-2">
+                                {project.specifications.sustainability.features.map((feature, idx) => (
+                                  <li key={idx}>{typeof feature === 'object' ? getText(feature) : feature}</li>
+                                ))}
+                              </ul>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {project.financial && (
+                      <div className="col-md-6 mb-4">
+                        <h5 className="mb-3">{t('projects.financial')}</h5>
+                        <ul className="list-group list-group-flush">
+                          {project.financial.budget && (
+                            <li className="list-group-item border-0 px-0">
+                              <strong>{t('projects.budget', 'Budget')}:</strong> {formatCurrency(project.financial.budget.total, project.financial.budget.currency || 'EUR')}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* If there's a details string or object, display it too */}
+                  {(project.details_safe || project.details) && (
                     <div 
-                      className="project-details"
-                      dangerouslySetInnerHTML={{ __html: getText(project.details) }}
+                      className="project-details mt-3"
+                      dangerouslySetInnerHTML={{ __html: project.details_safe || getText(project.details) }}
                     />
+                  )}
+                </div>
+              </Tab.Pane>
+              
+              {(project.timeline_safe || (project.timeline && project.timeline.length > 0)) && (
+                <Tab.Pane eventKey="timeline">
+                  <div className="bg-white p-4 rounded shadow-sm">
+                    <h2 className="h4 mb-4" style={{ color: '#212529 !important' }}>{t('projects.projectTimeline', 'Project Timeline')}</h2>
+                    <div className="timeline-wrapper">
+                      {(project.timeline_safe || project.timeline).map((item, index) => (
+                        <div key={`timeline-${index}`} className="timeline-item">
+                          <div className="timeline-badge bg-primary">
+                            <i className={item.icon || "fas fa-calendar"}></i>
+                          </div>
+                          <div className="timeline-panel">
+                            <div className="timeline-heading">
+                              <h4 className="timeline-title">{project.timeline_safe ? item.title : getText(item.title)}</h4>
+                              <p><small className="text-muted"><i className="fas fa-clock"></i> {formatDate(item.date)}</small></p>
+                            </div>
+                            <div className="timeline-body">
+                              <p>{project.timeline_safe ? item.description : getText(item.description)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </Tab.Pane>
               )}
               
-              {project.features && project.features.length > 0 && (
+              {(project.features_safe || (project.features && project.features.length > 0)) && (
                 <Tab.Pane eventKey="features">
                   <div className="bg-white p-4 rounded shadow-sm">
-                    <h2 className="h4 mb-4" style={{ color: '#212529 !important' }}>{t('projects.detail.keyFeatures')}</h2>
-                    <ul className="list-group list-group-flush">
-                      {project.features.map((feature, index) => (
-                        <li key={`feature-${index}`} className="list-group-item border-0 px-0">
-                          <div className="d-flex">
-                            <div className="flex-shrink-0 me-3">
-                              <i className="fas fa-check-circle text-success"></i>
-                            </div>
-                            <div>
-                              {getText(feature)}
+                    <h2 className="h4 mb-4" style={{ color: '#212529 !important' }}>{t('projects.keyFeatures', 'Key Features')}</h2>
+                    
+                    <div className="row">
+                      {(project.features_safe || project.features).map((feature, index) => {
+                        // Handle both string features and object features
+                        const isObjectFeature = typeof feature === 'object' && feature !== null;
+                        const featureText = isObjectFeature ? 
+                          (project.features_safe ? feature : getText(feature)) : 
+                          String(feature);
+                          
+                        return (
+                          <div key={`feature-${index}`} className="col-md-6 mb-4">
+                            <div className="card h-100 border-0 shadow-sm">
+                              <div className="card-body">
+                                {isObjectFeature && feature.title ? (
+                                  <>
+                                    <h5 className="card-title mb-3">
+                                      {project.features_safe ? feature.title : getText(feature.title)}
+                                    </h5>
+                                    <p className="card-text">
+                                      {project.features_safe ? feature.description : getText(feature.description)}
+                                    </p>
+                                  </>
+                                ) : (
+                                  <p className="card-text">{featureText}</p>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </li>
-                      ))}
-                    </ul>
+                        );
+                      })}
+                    </div>
                   </div>
                 </Tab.Pane>
               )}

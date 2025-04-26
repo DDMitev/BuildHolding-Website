@@ -2,36 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, Button, Alert } from 'react-bootstrap';
-import * as projectStorage from '../../services/projectStorage';
+import { getProjects } from '../../firebase/projectService';
+import { useFirebase } from '../../firebase/FirebaseContext';
 
 const DashboardPage = () => {
   const { t } = useTranslation();
-  const [user, setUser] = useState(null);
+  const { currentUser } = useFirebase();
   const [recentProjects, setRecentProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Initialize user and projects
+  // Initialize projects
   useEffect(() => {
-    // Get user data from localStorage 
-    const userData = JSON.parse(localStorage.getItem('user') || 'null');
-    
-    if (!userData) {
-      // For demo purposes, create a mock user if none exists
-      const mockUser = { displayName: 'Admin User', email: 'admin@buildholding.com' };
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', 'mock-token-123');
-      setUser(mockUser);
-    } else {
-      setUser(userData);
-    }
-    
     // Load projects
-    const fetchProjects = () => {
+    const fetchProjects = async () => {
       try {
         setLoading(true);
-        // Use projectStorage service instead of API call
-        const allProjects = projectStorage.getProjects();
+        // Use Firebase projectService instead of localStorage
+        const allProjects = await getProjects();
         
         if (allProjects && allProjects.length > 0) {
           // Take the most recent 5 projects
@@ -65,7 +53,7 @@ const DashboardPage = () => {
   const plannedProjects = countProjectsByStatus('planned');
   const totalProjects = recentProjects.length;
   
-  if (!user) {
+  if (!currentUser) {
     return (
       <div className="text-center py-5">
         <div className="spinner-border text-primary" role="status">

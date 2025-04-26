@@ -5,7 +5,7 @@ import HeroSection from '../components/Common/HeroSection';
 import hardcodedProjects from '../data/hardcoded-projects';
 import { projectService } from '../services/api.service';
 import * as homeContentService from '../services/homeContentService';
-import * as projectStorage from '../services/projectStorage';
+import { getProjects } from '../firebase/projectService';
 
 const FeaturedProject = ({ project }) => {
   if (!project) return null;
@@ -35,9 +35,11 @@ const FeaturedProject = ({ project }) => {
         <div className="position-relative">
           <img 
             src={getImageUrl(
-              project.images && project.images[0]?.url 
-                ? project.images[0].url 
-                : (project.mainImageUrl || "")
+              project.gallery && project.gallery.length > 0 
+                ? project.gallery[0] 
+                : (project.images && project.images[0]?.url 
+                   ? project.images[0].url 
+                   : "https://via.placeholder.com/600x400?text=BuildHolding")
             )}
             className="card-img-top" 
             alt={project.title?.en || "Project"}
@@ -63,7 +65,7 @@ const FeaturedProject = ({ project }) => {
           <p className="card-text mb-4">
             {project.shortDescription?.en || project.description?.en || "Project description goes here"}
           </p>
-          <Link to={`/projects/${project._id || project.id || "1"}`} className="btn btn-outline-primary">
+          <Link to={`/projects/${project.id || "1"}`} className="btn btn-outline-primary">
             View Details
           </Link>
         </div>
@@ -88,22 +90,25 @@ const HomePage = () => {
       try {
         setLoading(true);
         
-        // First try to get projects from projectStorage (localStorage)
-        const storedProjects = projectStorage.getProjects();
+        // Get projects from Firebase
+        const allProjects = await getProjects();
         
-        if (storedProjects && storedProjects.length > 0) {
-          console.log("Using projects from localStorage");
+        if (allProjects && allProjects.length > 0) {
+          console.log("Using projects from Firebase");
           // Filter for featured projects
-          const featuredFromStorage = storedProjects.filter(p => p.featured === true).slice(0, 4);
+          const featuredFromFirebase = allProjects.filter(p => p.featured === true).slice(0, 4);
           
-          if (featuredFromStorage.length > 0) {
-            setFeaturedProjects(featuredFromStorage);
-            setLoading(false);
+          if (featuredFromFirebase.length > 0) {
+            setFeaturedProjects(featuredFromFirebase);
             return;
           }
+          
+          // If no featured projects found, just use the first 4 projects
+          setFeaturedProjects(allProjects.slice(0, 4));
+          return;
         }
         
-        // If no projects in localStorage, try API
+        // If no projects in Firebase, try API as fallback
         const response = await projectService.getFeatured(4);
         
         if (response.data && response.data.data && response.data.data.length > 0) {

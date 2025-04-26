@@ -264,15 +264,6 @@
       "plannedProjects": "Planned",
       "recentProjects": "Recent Projects"
     },
-    "login": {
-      "title": "Admin Login",
-      "subtitle": "Enter your credentials to access the admin panel",
-      "email": "Email",
-      "password": "Password",
-      "signIn": "SIGN IN",
-      "signingIn": "Signing in...",
-      "invalidCredentials": "Invalid credentials. Please try again."
-    },
     "nav": {
       "dashboard": "Dashboard",
       "projects": "Projects",

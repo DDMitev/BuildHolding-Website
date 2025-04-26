@@ -1,5 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getProjects, getProjectById, updateProject as firebaseUpdateProject, addProject, resetToDefaults } from '../firebase/projectService';
+// Keep localStorage for fallback
 import * as projectStorage from '../services/projectStorage';
 
 const ProjectAdmin = () => {
@@ -11,6 +13,7 @@ const ProjectAdmin = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [activeTab, setActiveTab] = useState('basic');
+  const [loading, setLoading] = useState(false);
   const tabs = [
     { id: 'basic', label: 'Basic Info' },
     { id: 'images', label: 'Images' },
@@ -44,9 +47,10 @@ const ProjectAdmin = () => {
   // Load projects on component mount
   useEffect(() => {
     const fetchProjects = async () => {
+      setLoading(true);
       try {
-        // Load from localStorage or fallback to hardcoded data
-        let storedProjects = projectStorage.initializeProjects();
+        // Load from Firebase or fallback to localStorage
+        let storedProjects = await getProjects();
         
         // Normalize data structure for gallery
         storedProjects = storedProjects.map(project => {
@@ -62,6 +66,8 @@ const ProjectAdmin = () => {
       } catch (error) {
         console.error('Error loading projects:', error);
         setProjects([]);
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -156,13 +162,31 @@ const ProjectAdmin = () => {
   }, [formData?.id]);
 
   // Handle project selection
-  const handleSelectProject = (project) => {
-    setCurrentProject(deepCopy(project));
-    setFormData(deepCopy(project));
-    setEditMode(false);
-    setSaveSuccess(false);
-    setSaveError(null);
-    setActiveTab('basic');
+  const handleSelectProject = async (project) => {
+    try {
+      setLoading(true);
+      // Get fresh data from Firebase
+      const projectData = await getProjectById(project.id);
+      if (projectData) {
+        setCurrentProject(deepCopy(projectData));
+        setFormData(deepCopy(projectData));
+      } else {
+        // Fallback to the project data we have
+        setCurrentProject(deepCopy(project));
+        setFormData(deepCopy(project));
+      }
+      setEditMode(false);
+      setSaveSuccess(false);
+      setSaveError(null);
+      setActiveTab('basic');
+    } catch (error) {
+      console.error('Error fetching project details:', error);
+      // Still use the project data we have if Firebase fetch fails
+      setCurrentProject(deepCopy(project));
+      setFormData(deepCopy(project));
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle edit button click
@@ -268,22 +292,30 @@ const ProjectAdmin = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
+      setLoading(true);
       // Prepare data before saving
       const dataToSave = prepareDataForSave();
       
-      // Save the updated project data to localStorage
-      const success = projectStorage.updateProject(formData.id, dataToSave);
+      // Save the updated project data to Firebase
+      const success = await firebaseUpdateProject(formData.id, dataToSave);
       
       if (success) {
         setSaveSuccess(true);
         setSaveError(null);
         
-        // Force the page to refresh local data from storage
-        projectStorage.saveProjects(projectStorage.initializeProjects());
+        // Force the page to refresh local data from Firebase
+        const updatedProjects = await getProjects();
+        setProjects(deepCopy(updatedProjects));
+        
+        // Update current project with the latest data
+        const updatedProject = await getProjectById(formData.id);
+        if (updatedProject) {
+          setCurrentProject(deepCopy(updatedProject));
+        }
         
         // Clear message after 3 seconds
         setTimeout(() => {
@@ -297,6 +329,8 @@ const ProjectAdmin = () => {
       console.error('Error saving project:', error);
       setSaveError('Failed to save project. Please try again.');
       setSaveSuccess(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -347,45 +381,10 @@ const ProjectAdmin = () => {
       <div className="images-editor mb-4">
         <h5 className="mb-3">Project Images</h5>
         
-        {/* Thumbnail Image */}
-        <div className="card mb-3">
-          <div className="card-header bg-light">Thumbnail Image</div>
-          <div className="card-body">
-            <div className="row mb-3">
-              <div className="col-md-12">
-                {formData.thumbnail && (
-                  <div className="image-preview mb-3 text-center">
-                    <img 
-                      src={formData.thumbnail} 
-                      alt="Thumbnail"
-                      className="img-fluid rounded border" 
-                      style={{ maxHeight: '150px', border: '1px solid #ccc', background: "#f8f9fa" }} 
-                      onError={(e) => {
-                        e.target.src = 'https://placehold.co/300x200/e9ecef/6c757d?text=Thumbnail+Not+Found';
-                        console.log("Error loading thumbnail:", formData.thumbnail);
-                      }}
-                    />
-                  </div>
-                )}
-                <div className="form-group">
-                  <label className="form-label">Thumbnail URL</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.thumbnail || ''}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      thumbnail: e.target.value
-                    })}
-                    placeholder="Enter URL for thumbnail image"
-                  />
-                  <small className="form-text text-muted">
-                    This image will be used as the project card thumbnail and also as the main image if no gallery images are available.
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Removed separate thumbnail field - now using first gallery image */}
+        <div className="alert alert-info">
+          <i className="fas fa-info-circle me-2"></i>
+          The first image in your gallery will automatically be used as the project thumbnail on cards and listings.
         </div>
         
         {/* Gallery */}
@@ -407,8 +406,9 @@ const ProjectAdmin = () => {
           </div>
           <div className="card-body">
             {!formData.gallery || formData.gallery.length === 0 ? (
-              <div className="alert alert-info">
-                No gallery images added yet. Click "Add Image" to start building your gallery.
+              <div className="alert alert-warning">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                No gallery images added yet. Please add at least one image as it will be used as the project thumbnail.
               </div>
             ) : (
               <div className="gallery-items">
@@ -433,6 +433,11 @@ const ProjectAdmin = () => {
                                   console.log("Error loading gallery image:", imageUrl);
                                 }}
                               />
+                              {index === 0 && (
+                                <div className="mt-2">
+                                  <span className="badge bg-primary">Thumbnail Image</span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -493,12 +498,10 @@ const ProjectAdmin = () => {
           <div className="collapse" id="imageDebugInfo">
             <div className="card-body">
               <div className="mb-3">
-                <h6>Thumbnail URL: {formData.thumbnail || 'Not set'}</h6>
                 <h6>Gallery Images: {formData.gallery?.length || 0} images</h6>
                 <hr/>
                 <pre style={{maxHeight: '200px', overflow: 'auto'}}>
                   {JSON.stringify({
-                    thumbnail: formData.thumbnail,
                     gallery: formData.gallery
                   }, null, 2)}
                 </pre>
@@ -1985,109 +1988,219 @@ const ProjectAdmin = () => {
     );
   };
 
-  return (
-    <div className="project-admin">
-      <div className="row">
-        <div className="col-md-3">
-          <div className="card">
-            <div className="card-header bg-primary text-white">
-              <h5 className="m-0">Projects</h5>
-            </div>
-            <div className="card-body p-0">
-              <div className="list-group list-group-flush" style={{ maxHeight: '600px', overflowY: 'auto' }}>
-                {projects.map(project => (
-                  <button
-                    key={project.id}
-                    className={`list-group-item list-group-item-action ${currentProject?.id === project.id ? 'active' : ''}`}
-                    onClick={() => handleSelectProject(project)}
-                  >
-                    <div><SafeText value={project.title[currentLanguage] || project.title.en} /></div>
-                    <div className="d-flex align-items-center gap-2 mt-1">
-                      <span className="badge bg-secondary"><SafeText value={project.status} /></span>
-                      {project.featured && <span className="badge bg-warning">Featured</span>}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+  // Add new project button handler
+  const handleAddNewProject = async () => {
+    try {
+      setLoading(true);
+      // Create a new project with a unique ID and basic data
+      const newProject = {
+        title: { en: 'New Project', bg: 'Нов Проект', ru: 'Новый проект' },
+        category: { en: 'Residential', bg: 'Жилищно строителство', ru: 'Жилищное строительство' },
+        status: 'planned',
+        description: { 
+          en: 'Project description', 
+          bg: 'Описание на проекта', 
+          ru: 'Описание проекта' 
+        },
+        gallery: [],
+        createdAt: new Date().toISOString()
+      };
+      
+      // Add the project to Firebase and get the new ID
+      const newId = await addProject(newProject);
+      
+      if (newId) {
+        // Fetch the newly created project to ensure we have the correct data
+        const createdProject = await getProjectById(newId);
+        if (createdProject) {
+          setCurrentProject(deepCopy(createdProject));
+          setFormData(deepCopy(createdProject));
           
-          <div className="card mt-3">
-            <div className="card-header bg-primary text-white">
-              <h5 className="m-0">Data Management</h5>
+          // Refresh the projects list
+          const updatedProjects = await getProjects();
+          setProjects(deepCopy(updatedProjects));
+          
+          setEditMode(true);
+          setSaveSuccess(true);
+          setSaveError(null);
+          setActiveTab('basic');
+          
+          // Clear success message after 3 seconds
+          setTimeout(() => {
+            setSaveSuccess(false);
+          }, 3000);
+        }
+      } else {
+        setSaveError('Failed to create new project. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating new project:', error);
+      setSaveError('Failed to create new project. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset to defaults handler
+  const handleResetToDefaults = async () => {
+    if (window.confirm('Are you sure you want to reset to default data? All your changes will be lost.')) {
+      try {
+        setLoading(true);
+        // Reset projects in Firebase
+        const success = await resetToDefaults();
+        if (success) {
+          // Get fresh projects after reset
+          const defaultProjects = await getProjects();
+          setProjects(deepCopy(defaultProjects));
+          setCurrentProject(null);
+          setEditMode(false);
+          setFormData({});
+          setSaveSuccess(true);
+          setSaveError(null);
+          setTimeout(() => {
+            setSaveSuccess(false);
+          }, 3000);
+        } else {
+          setSaveError('Failed to reset projects. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error resetting projects:', error);
+        setSaveError('Failed to reset projects. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Add render components for loading state
+  const LoadingIndicator = () => (
+    <div className="text-center my-3">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+      <p className="mt-2">Loading...</p>
+    </div>
+  );
+
+  return (
+    <div className="project-admin-container p-4">
+      <h1 className="mb-4">Project Management</h1>
+      
+      {/* Success/Error Alerts */}
+      {saveSuccess && (
+        <div className="alert alert-success alert-dismissible fade show" role="alert">
+          Project saved successfully!
+          <button type="button" className="btn-close" aria-label="Close" onClick={() => setSaveSuccess(false)}></button>
+        </div>
+      )}
+      {saveError && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          {saveError}
+          <button type="button" className="btn-close" aria-label="Close" onClick={() => setSaveError(null)}></button>
+        </div>
+      )}
+      
+      <div className="row">
+        {/* Project List */}
+        <div className="col-md-4 mb-4">
+          <div className="card">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">Projects</h5>
+              <button 
+                className="btn btn-sm btn-primary" 
+                onClick={handleAddNewProject}
+                disabled={loading}
+              >
+                <i className="fas fa-plus"></i> New Project
+              </button>
             </div>
             <div className="card-body">
-              <p className="small mb-2">Export or reset your data as needed.</p>
-              <div className="d-grid gap-2">
-                <button 
-                  className="btn btn-primary"
-                  onClick={() => {
-                    const jsonData = JSON.stringify(projects, null, 2);
-                    const blob = new Blob([jsonData], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'projects-data.json';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                  }}
-                >
-                  Export JSON
-                </button>
-                <button 
-                  className="btn btn-outline-danger"
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to reset to default data? All your changes will be lost.')) {
-                      const defaultProjects = projectStorage.resetToDefaults();
-                      setProjects(deepCopy(defaultProjects));
-                      setCurrentProject(null);
-                      setEditMode(false);
-                      setSaveSuccess(false);
-                      setSaveError(null);
-                      
-                      // Show success message
-                      alert('Data has been reset to defaults.');
-                    }
-                  }}
-                >
-                  Reset to Defaults
-                </button>
-              </div>
+              {loading && <LoadingIndicator />}
+              
+              {!loading && projects.length === 0 ? (
+                <p className="text-center">No projects found.</p>
+              ) : (
+                <div className="list-group">
+                  {projects.map((project) => (
+                    <button
+                      key={project.id}
+                      className={`list-group-item list-group-item-action ${currentProject?.id === project.id ? 'active' : ''}`}
+                      onClick={() => handleSelectProject(project)}
+                      disabled={loading}
+                    >
+                      <div className="d-flex w-100 justify-content-between">
+                        <h5 className="mb-1">
+                          <SafeText value={project.title?.[currentLanguage] || project.title?.en} />
+                        </h5>
+                        <small className={`badge ${project.status === 'complete' ? 'bg-success' : project.status === 'in-progress' ? 'bg-warning' : 'bg-info'}`}>
+                          {project.status}
+                        </small>
+                      </div>
+                      <p className="mb-1 text-truncate">
+                        <SafeText value={project.category?.[currentLanguage] || project.category?.en} />
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="card-footer">
+              <button 
+                className="btn btn-outline-danger w-100" 
+                onClick={handleResetToDefaults}
+                disabled={loading}
+              >
+                <i className="fas fa-sync-alt"></i> Reset to Defaults
+              </button>
             </div>
           </div>
         </div>
         
-        <div className="col-md-9">
-          {currentProject ? (
+        {/* Project Edit Form */}
+        <div className="col-md-8">
+          {loading && <LoadingIndicator />}
+          
+          {!loading && currentProject ? (
             <div className="card">
-              <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 className="m-0">
-                  {editMode ? 'Edit Project' : <SafeText value={currentProject.title[currentLanguage] || currentProject.title.en} />}
+              <div className="card-header d-flex justify-content-between align-items-center">
+                <h5 className="mb-0">
+                  {editMode ? 'Edit Project' : (
+                    <>
+                      <SafeText value={currentProject.title?.[currentLanguage] || currentProject.title?.en} />
+                      <small className="ms-2 text-muted">ID: {currentProject.id}</small>
+                    </>
+                  )}
                 </h5>
-                {!editMode && (
+                {!editMode ? (
                   <button 
-                    className="btn btn-sm btn-light"
+                    className="btn btn-primary" 
                     onClick={handleEditClick}
+                    disabled={loading}
                   >
-                    Edit
+                    <i className="fas fa-edit"></i> Edit
+                  </button>
+                ) : (
+                  <button 
+                    className="btn btn-success" 
+                    onClick={handleSubmit}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-save"></i> Save
+                      </>
+                    )}
                   </button>
                 )}
               </div>
               <div className="card-body">
-                {saveSuccess && (
-                  <div className="alert alert-success">
-                    Project saved successfully! Your changes have been stored in the browser. 
-                  </div>
-                )}
-                
-                {saveError && (
-                  <div className="alert alert-danger"><SafeText value={saveError} /></div>
-                )}
-                
                 {editMode ? (
-                  <form onSubmit={handleSubmit}>
+                  <form>
                     {/* Tab navigation for different sections */}
                     <ul className="nav nav-tabs mb-4">
                       {tabs.map(tab => (
@@ -2275,20 +2388,6 @@ const ProjectAdmin = () => {
                       </div>
                       
                       <div className="col-md-4">
-                        {currentProject.thumbnail && (
-                          <div className="mb-4">
-                            <strong>Thumbnail:</strong>
-                            <div className="mt-2">
-                              <img 
-                                src={currentProject.thumbnail} 
-                                alt="Thumbnail"
-                                className="img-thumbnail" 
-                                style={{ maxHeight: '100px' }} 
-                              />
-                            </div>
-                          </div>
-                        )}
-                        
                         {currentProject.gallery && currentProject.gallery.length > 0 && (
                           <div className="mb-4">
                             <strong>Gallery ({currentProject.gallery.length} images):</strong>
