@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import HeroSection from '../components/Common/HeroSection';
 import hardcodedProjects from '../data/hardcoded-projects';
 import { projectService } from '../services/api.service';
-import * as homeContentService from '../services/homeContentService';
+import { getHomeContent } from '../firebase/contentService';
 import { getProjects } from '../firebase/projectService';
 
 const FeaturedProject = ({ project }) => {
@@ -82,9 +82,19 @@ const HomePage = () => {
   const [pageContent, setPageContent] = useState(null);
   
   useEffect(() => {
-    // Load content from homeContentService
-    const content = homeContentService.getHomeContent();
-    setPageContent(content);
+    // Load content from Firebase
+    const loadContent = async () => {
+      try {
+        // Load content from Firebase contentService
+        const content = await getHomeContent();
+        setPageContent(content);
+        
+        console.log("Homepage content loaded from Firebase:", content);
+      } catch (err) {
+        console.error("Error loading homepage content from Firebase:", err);
+        // We'll continue with null content and use fallbacks
+      }
+    };
     
     const loadFeaturedProjects = async () => {
       try {
@@ -132,6 +142,8 @@ const HomePage = () => {
       }
     };
     
+    // Run both loading functions in parallel
+    loadContent();
     loadFeaturedProjects();
   }, []);
 

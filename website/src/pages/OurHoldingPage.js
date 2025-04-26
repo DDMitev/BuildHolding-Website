@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import HeroSection from '../components/Common/HeroSection';
-import * as holdingContentService from '../services/holdingContentService';
+import { getHoldingContent } from '../firebase/contentService';
 
 const OurHoldingPage = () => {
   const { t } = useTranslation();
@@ -11,10 +11,20 @@ const OurHoldingPage = () => {
   const timelineRef = useRef(null);
   const [pageContent, setPageContent] = useState(null);
   
-  // Load content from holdingContentService
+  // Load content from Firebase
   useEffect(() => {
-    const content = holdingContentService.getHoldingContent();
-    setPageContent(content);
+    const loadContent = async () => {
+      try {
+        const content = await getHoldingContent();
+        setPageContent(content);
+        console.log("Holding page content loaded from Firebase:", content);
+      } catch (err) {
+        console.error("Error loading holding content from Firebase:", err);
+        // Continue with null content and use fallbacks
+      }
+    };
+    
+    loadContent();
   }, []);
   
   // Equipment items - use content from service if available, otherwise fall back to hardcoded data

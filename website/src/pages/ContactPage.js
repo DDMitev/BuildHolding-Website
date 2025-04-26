@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import HeroSection from '../components/Common/HeroSection';
-import * as contactContentService from '../services/contactContentService';
+import { getContactContent } from '../firebase/contentService';
 
 const ContactPage = () => {
   const { t } = useTranslation();
@@ -19,10 +19,20 @@ const ContactPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [pageContent, setPageContent] = useState(null);
   
-  // Load content from contactContentService
+  // Load content from Firebase contentService
   useEffect(() => {
-    const content = contactContentService.getContactContent();
-    setPageContent(content);
+    const loadContent = async () => {
+      try {
+        const content = await getContactContent();
+        setPageContent(content);
+        console.log("Contact page content loaded from Firebase:", content);
+      } catch (err) {
+        console.error("Error loading contact content from Firebase:", err);
+        // Continue with null content and use fallbacks
+      }
+    };
+    
+    loadContent();
   }, []);
   
   // Social media links from content service or fallback to defaults
