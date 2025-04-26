@@ -15,7 +15,8 @@ import {
   deleteDoc, 
   query, 
   where,
-  serverTimestamp
+  serverTimestamp,
+  deleteField
 } from 'firebase/firestore';
 import { db } from './config';
 import hardcodedProjects from '../data/hardcoded-projects';
@@ -152,10 +153,67 @@ export const getProjects = async () => {
     const querySnapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
     const projects = [];
     
-    querySnapshot.forEach((doc) => {
-      projects.push({ id: doc.id, ...doc.data() });
-    });
+    // Process each project document
+    for (const doc of querySnapshot.docs) {
+      const project = { id: doc.id, ...doc.data() };
+      
+      // Migrate to gallery format if needed
+      let needsUpdate = false;
+      
+      // Ensure gallery exists and is properly formatted
+      if (!project.gallery) {
+        project.gallery = [];
+        needsUpdate = true;
+        
+        // Convert from legacy formats
+        if (project.images && Array.isArray(project.images)) {
+          project.gallery = project.images
+            .map(img => typeof img === 'string' ? img : (img && img.url ? img.url : ''))
+            .filter(url => url && url.trim() !== '');
+          console.log(`Converting legacy images for project ${project.id}`);
+        } else if (project.image) {
+          project.gallery = [project.image];
+          console.log(`Using image as gallery for project ${project.id}`);
+        } else if (project.thumbnail) {
+          project.gallery = [project.thumbnail];
+          console.log(`Using thumbnail as gallery for project ${project.id}`);
+        }
+      } else if (!Array.isArray(project.gallery)) {
+        // Fix non-array gallery
+        project.gallery = [String(project.gallery)];
+        needsUpdate = true;
+        console.log(`Fixed non-array gallery for project ${project.id}`);
+      }
+      
+      // Clean up legacy fields from the document
+      if (project.images || project.image || project.thumbnail) {
+        delete project.images;
+        delete project.image;
+        delete project.thumbnail;
+        needsUpdate = true;
+        console.log(`Removed legacy image fields from project ${project.id}`);
+      }
+      
+      // Update the document in Firestore if needed
+      if (needsUpdate) {
+        try {
+          const docRef = doc(db, PROJECTS_COLLECTION, project.id);
+          await updateDoc(docRef, {
+            gallery: project.gallery,
+            images: deleteField(),
+            image: deleteField(),
+            thumbnail: deleteField()
+          });
+          console.log(`Updated project ${project.id} in Firestore to use gallery format`);
+        } catch (updateError) {
+          console.error(`Error updating project ${project.id}:`, updateError);
+        }
+      }
+      
+      projects.push(project);
+    }
     
+    console.log("Projects from Firestore:", projects);
     return projects;
   } catch (error) {
     console.error('Error getting projects from Firestore:', error);
@@ -323,3 +381,5 @@ export default {
   resetToDefaults,
   initializeFirestoreProjects
 };
+"// Updated on $(date)" 
+"// Updated on $(date)" 

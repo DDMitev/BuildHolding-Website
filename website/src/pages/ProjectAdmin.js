@@ -44,6 +44,77 @@ const ProjectAdmin = () => {
     return <span>{value}</span>;
   };
 
+  // Normalize gallery data when loading a project
+  useEffect(() => {
+    if (formData && formData.id) {
+      const updatedFormData = {...formData};
+      let needsUpdate = false;
+
+      // Ensure gallery exists and is properly formatted as an array of URL strings
+      if (!updatedFormData.gallery) {
+        // If gallery doesn't exist, try to convert from legacy formats
+        if (updatedFormData.images && Array.isArray(updatedFormData.images)) {
+          // Convert legacy images array of objects to gallery array of URL strings
+          const galleryUrls = updatedFormData.images
+            .map(img => {
+              // Handle both string and object formats
+              if (typeof img === 'string') return img;
+              if (typeof img === 'object' && img !== null) return img.url || '';
+              return '';
+            })
+            .filter(url => url && url.trim() !== '');
+          
+          updatedFormData.gallery = galleryUrls;
+          needsUpdate = true;
+          console.log("Converted legacy images format to gallery format:", galleryUrls);
+        } else if (updatedFormData.image) {
+          // If there's a single main image, use that
+          updatedFormData.gallery = [updatedFormData.image];
+          needsUpdate = true;
+          console.log("Created gallery from main image");
+        } else if (updatedFormData.thumbnail) {
+          // If there's only a thumbnail, use that
+          updatedFormData.gallery = [updatedFormData.thumbnail];
+          needsUpdate = true;
+          console.log("Created gallery from thumbnail");
+        } else {
+          // Create empty gallery if nothing else is available
+          updatedFormData.gallery = [];
+          needsUpdate = true;
+          console.log("Created empty gallery");
+        }
+      } else if (!Array.isArray(updatedFormData.gallery)) {
+        // Ensure gallery is an array
+        updatedFormData.gallery = [String(updatedFormData.gallery)];
+        needsUpdate = true;
+        console.log("Converted non-array gallery to array");
+      } else {
+        // Ensure all gallery items are strings (URLs)
+        const normalizedGallery = updatedFormData.gallery.map(item => {
+          if (typeof item === 'string') return item;
+          if (typeof item === 'object' && item !== null && item.url) return item.url;
+          return String(item || '');
+        }).filter(url => url && url.trim() !== '');
+        
+        if (JSON.stringify(normalizedGallery) !== JSON.stringify(updatedFormData.gallery)) {
+          updatedFormData.gallery = normalizedGallery;
+          needsUpdate = true;
+          console.log("Normalized gallery items to URL strings");
+        }
+      }
+      
+      // Remove legacy fields that are no longer needed
+      if (updatedFormData.thumbnail) {
+        delete updatedFormData.thumbnail;
+        needsUpdate = true;
+      }
+      
+      if (needsUpdate) {
+        setFormData(updatedFormData);
+      }
+    }
+  }, [formData?.id]);
+
   // Load projects on component mount
   useEffect(() => {
     const fetchProjects = async () => {
@@ -51,17 +122,52 @@ const ProjectAdmin = () => {
       try {
         // Load from Firebase or fallback to localStorage
         let storedProjects = await getProjects();
+        console.log("Raw projects from Firebase:", JSON.stringify(storedProjects));
         
         // Normalize data structure for gallery
         storedProjects = storedProjects.map(project => {
-          if (!project.gallery && project.images) {
-            project.gallery = project.images.map(img => img.url);
-          } else if (!project.gallery) {
-            project.gallery = [];
+          const normalizedProject = { ...project };
+          
+          // Ensure gallery exists
+          if (!normalizedProject.gallery) {
+            if (normalizedProject.images && Array.isArray(normalizedProject.images)) {
+              // Convert from legacy format
+              normalizedProject.gallery = normalizedProject.images
+                .map(img => {
+                  if (typeof img === 'string') return img;
+                  if (typeof img === 'object' && img !== null) return img.url || '';
+                  return '';
+                })
+                .filter(url => url && url.trim() !== '');
+              console.log(`Converted legacy images for project ${normalizedProject.id}:`, normalizedProject.gallery);
+            } else if (normalizedProject.image || normalizedProject.thumbnail) {
+              // Use main image or thumbnail as fallback
+              normalizedProject.gallery = [];
+              if (normalizedProject.image) normalizedProject.gallery.push(normalizedProject.image);
+              else if (normalizedProject.thumbnail) normalizedProject.gallery.push(normalizedProject.thumbnail);
+              console.log(`Created gallery from main image for project ${normalizedProject.id}:`, normalizedProject.gallery);
+            } else {
+              normalizedProject.gallery = [];
+            }
+          } else if (!Array.isArray(normalizedProject.gallery)) {
+            // Fix non-array gallery
+            normalizedProject.gallery = [String(normalizedProject.gallery)];
+            console.log(`Fixed non-array gallery for project ${normalizedProject.id}:`, normalizedProject.gallery);
           }
-          return project;
+          
+          // Always ensure gallery is an array of strings
+          normalizedProject.gallery = (normalizedProject.gallery || [])
+            .map(item => {
+              if (typeof item === 'string') return item;
+              if (typeof item === 'object' && item !== null && item.url) return item.url;
+              return String(item || '');
+            })
+            .filter(url => url && url.trim() !== '');
+            
+          return normalizedProject;
         });
         
+        console.log("Normalized projects:", storedProjects);
         setProjects(deepCopy(storedProjects));
       } catch (error) {
         console.error('Error loading projects:', error);
@@ -167,11 +273,47 @@ const ProjectAdmin = () => {
       setLoading(true);
       // Get fresh data from Firebase
       const projectData = await getProjectById(project.id);
+      
       if (projectData) {
+        console.log("Loaded project from Firebase:", projectData);
+        
+        // Ensure gallery is properly initialized
+        if (!projectData.gallery) {
+          projectData.gallery = [];
+          
+          // Try to convert from legacy formats if needed
+          if (projectData.images && Array.isArray(projectData.images)) {
+            projectData.gallery = projectData.images
+              .map(img => typeof img === 'string' ? img : (img && img.url ? img.url : ''))
+              .filter(url => url && url.trim() !== '');
+          } else if (projectData.image) {
+            projectData.gallery = [projectData.image];
+          } else if (projectData.thumbnail) {
+            projectData.gallery = [projectData.thumbnail];
+          }
+        }
+        
+        // Ensure gallery is always an array of strings
+        if (!Array.isArray(projectData.gallery)) {
+          projectData.gallery = [String(projectData.gallery)];
+        }
+        
+        // Clean up gallery items
+        projectData.gallery = projectData.gallery
+          .map(item => {
+            if (typeof item === 'string') return item;
+            if (typeof item === 'object' && item !== null && item.url) return item.url;
+            return String(item || '');
+          })
+          .filter(url => url && url.trim() !== '');
+          
+        console.log("Normalized gallery:", projectData.gallery);
+        
         setCurrentProject(deepCopy(projectData));
         setFormData(deepCopy(projectData));
       } else {
         // Fallback to the project data we have
+        console.log("Project not found in Firebase, using local data:", project);
         setCurrentProject(deepCopy(project));
         setFormData(deepCopy(project));
       }
@@ -385,16 +527,28 @@ const ProjectAdmin = () => {
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
           The first image in your gallery will automatically be used as the project thumbnail on cards and listings.
+          {formData.gallery && formData.gallery.length > 0 && (
+            <div className="mt-2">
+              <strong>Current thumbnail: </strong>
+              <img 
+                src={formData.gallery[0]} 
+                alt="Thumbnail" 
+                className="img-thumbnail"
+                style={{ maxHeight: '50px' }}
+              />
+            </div>
+          )}
         </div>
         
         {/* Gallery */}
         <div className="card mb-3">
           <div className="card-header bg-light d-flex justify-content-between align-items-center">
-            <span>Gallery Images</span>
+            <span>Gallery Images ({formData.gallery?.length || 0})</span>
             <button 
               type="button" 
               className="btn btn-sm btn-outline-primary"
               onClick={() => {
+                console.log("Adding new image to gallery", formData.gallery);
                 setFormData({
                   ...formData,
                   gallery: [...(formData.gallery || []), '']
@@ -425,6 +579,7 @@ const ProjectAdmin = () => {
                                 className="img-fluid rounded border" 
                                 style={{ 
                                   maxHeight: '120px', 
+                                  maxWidth: '100%',
                                   border: '1px solid #ccc', 
                                   background: "#f8f9fa"
                                 }} 
@@ -448,7 +603,8 @@ const ProjectAdmin = () => {
                               className="form-control"
                               value={imageUrl}
                               onChange={(e) => {
-                                const updatedGallery = [...formData.gallery];
+                                console.log("Updating gallery image", index, e.target.value);
+                                const updatedGallery = [...(formData.gallery || [])];
                                 updatedGallery[index] = e.target.value;
                                 setFormData({
                                   ...formData,
@@ -461,7 +617,7 @@ const ProjectAdmin = () => {
                               type="button"
                               className="btn btn-outline-danger"
                               onClick={() => {
-                                const updatedGallery = [...formData.gallery];
+                                const updatedGallery = [...(formData.gallery || [])];
                                 updatedGallery.splice(index, 1);
                                 setFormData({
                                   ...formData,
@@ -2020,12 +2176,13 @@ const ProjectAdmin = () => {
           const updatedProjects = await getProjects();
           setProjects(deepCopy(updatedProjects));
           
-          setEditMode(true);
-          setSaveSuccess(true);
-          setSaveError(null);
-          setActiveTab('basic');
+          // Update current project with the latest data
+          const updatedProject = await getProjectById(formData.id);
+          if (updatedProject) {
+            setCurrentProject(deepCopy(updatedProject));
+          }
           
-          // Clear success message after 3 seconds
+          // Clear message after 3 seconds
           setTimeout(() => {
             setSaveSuccess(false);
           }, 3000);
@@ -2070,6 +2227,34 @@ const ProjectAdmin = () => {
         setLoading(false);
       }
     }
+  };
+
+  // Handle form reset
+  const handleResetForm = () => {
+    if (currentProject) {
+      setFormData(deepCopy(currentProject));
+    } else {
+      setFormData({
+        title: { en: '', bg: '', ru: '' },
+        description: { en: '', bg: '', ru: '' },
+        shortDescription: { en: '', bg: '', ru: '' },
+        category: { en: '', bg: '', ru: '' },
+        status: 'planned',
+        gallery: [],
+        features: [],
+        timeline: [],
+        dateStarted: '',
+        dateCompleted: '',
+        location: {
+          address: { en: '', bg: '', ru: '' },
+          city: { en: '', bg: '', ru: '' },
+          country: { en: '', bg: '', ru: '' },
+          coordinates: { lat: 0, lng: 0 }
+        }
+      });
+    }
+    setSaveSuccess(false);
+    setSaveError(null);
   };
 
   // Add render components for loading state
@@ -2181,20 +2366,64 @@ const ProjectAdmin = () => {
                   </button>
                 ) : (
                   <button 
+                    type="button" 
                     className="btn btn-success" 
-                    onClick={handleSubmit}
-                    disabled={loading}
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        setLoading(true);
+                        
+                        // Prepare normalized data before saving to Firebase
+                        const projectToSave = { ...formData };
+                        
+                        // Ensure gallery is an array of URL strings
+                        if (projectToSave.gallery) {
+                          projectToSave.gallery = projectToSave.gallery
+                            .map(item => typeof item === 'string' ? item.trim() : '')
+                            .filter(url => url !== '');
+                        } else {
+                          projectToSave.gallery = [];
+                        }
+                        
+                        // Remove deprecated fields
+                        if (projectToSave.thumbnail) delete projectToSave.thumbnail;
+                        if (projectToSave.image) delete projectToSave.image;
+                        
+                        // Save to Firebase
+                        const success = await firebaseUpdateProject(projectToSave.id, projectToSave);
+                        
+                        if (success) {
+                          // Get fresh data from Firebase
+                          const updatedProject = await getProjectById(projectToSave.id);
+                          if (updatedProject) {
+                            setCurrentProject(deepCopy(updatedProject));
+                            setFormData(deepCopy(updatedProject));
+                            
+                            // Refresh the projects list
+                            const refreshedProjects = await getProjects();
+                            setProjects(deepCopy(refreshedProjects));
+                          }
+                          
+                          setEditMode(false);
+                          setSaveSuccess(true);
+                          setSaveError(null);
+                          
+                          // Clear success message after 3 seconds
+                          setTimeout(() => {
+                            setSaveSuccess(false);
+                          }, 3000);
+                        } else {
+                          setSaveError('Failed to save project. Please try again.');
+                        }
+                      } catch (error) {
+                        console.error('Error saving project:', error);
+                        setSaveError('Failed to save project: ' + (error.message || 'Unknown error'));
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
                   >
-                    {loading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fas fa-save"></i> Save
-                      </>
-                    )}
+                    Save Changes
                   </button>
                 )}
               </div>
@@ -2424,3 +2653,5 @@ const ProjectAdmin = () => {
 };
 
 export default ProjectAdmin;
+"// Updated on $(date)" 
+"// Updated on $(date)" 
