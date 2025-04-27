@@ -240,9 +240,8 @@ export const defaultContactContent = {
   }
 };
 
-// Default holding content - restructured to match the front-end sections exactly
+// Default holding content
 export const defaultHoldingContent = {
-  // Basic Sections
   hero: {
     title: {
       en: "Our Holding Structure",
@@ -256,7 +255,6 @@ export const defaultHoldingContent = {
     },
     backgroundImage: "/images/hero-bg-holding.jpg"
   },
-  
   overview: {
     title: {
       en: "Company Overview",
@@ -270,8 +268,6 @@ export const defaultHoldingContent = {
     },
     image: "/images/holding-overview.jpg"
   },
-  
-  // Core Values Section
   values: {
     title: {
       en: "Our Values",
@@ -300,21 +296,21 @@ export const defaultHoldingContent = {
           ru: "Качество"
         },
         description: {
-          en: "We deliver exceptional quality in every aspect of our work.",
-          bg: "Доставяме изключително качество във всеки аспект на нашата работа.",
-          ru: "Мы обеспечиваем исключительное качество во всех аспектах нашей работы."
+          en: "We never compromise on quality and strive for excellence in every project.",
+          bg: "Никога не правим компромис с качеството и се стремим към съвършенство във всеки проект.",
+          ru: "Мы никогда не идем на компромисс в отношении качества и стремимся к совершенству в каждом проекте."
         }
       },
       {
         icon: "fas fa-lightbulb",
         title: {
           en: "Innovation",
-          bg: "Иновации",
-          ru: "Инновации"
+          bg: "Иновация",
+          ru: "Инновация"
         },
         description: {
           en: "We embrace new technologies and methods to stay at the forefront of the industry.",
-          bg: "Възприемаме нови технологии и методи, за да останем начело в индустрията.",
+          bg: "Възприемаме нови технологии и методи, за да останем на челна линия в индустрията.",
           ru: "Мы внедряем новые технологии и методы, чтобы оставаться на переднем крае отрасли."
         }
       },
@@ -326,15 +322,13 @@ export const defaultHoldingContent = {
           ru: "Устойчивость"
         },
         description: {
-          en: "We are committed to environmentally responsible construction practices.",
-          bg: "Ние сме ангажирани с екологично отговорни строителни практики.",
-          ru: "Мы привержены экологически ответственным строительным практикам."
+          en: "We're committed to environmentally responsible practices in every project.",
+          bg: "Ангажирани сме с екологично отговорни практики във всеки проект.",
+          ru: "Мы привержены экологически ответственным практикам в каждом проекте."
         }
       }
     ]
   },
-  
-  // Company Statistics
   stats: {
     title: {
       en: "BuildHolding in Numbers",
@@ -343,45 +337,104 @@ export const defaultHoldingContent = {
     },
     items: [
       {
-        value: "250+",
+        number: "25+",
         label: {
-          en: "Employees",
-          bg: "Служители",
-          ru: "Сотрудники"
-        },
-        icon: "fa-users"
+          en: "Years of Experience",
+          bg: "Години опит",
+          ru: "Лет опыта"
+        }
       },
       {
-        value: "150+",
+        number: "10+",
+        label: {
+          en: "Companies",
+          bg: "Компании",
+          ru: "Компаний"
+        }
+      },
+      {
+        number: "500+",
         label: {
           en: "Completed Projects",
           bg: "Завършени проекти",
-          ru: "Завершенные проекты"
-        },
-        icon: "fa-building"
+          ru: "Завершенных проектов"
+        }
       },
       {
-        value: "25+",
+        number: "1000+",
         label: {
-          en: "Years Experience",
-          bg: "Години опит",
-          ru: "Лет опыта"
-        },
-        icon: "fa-calendar-check"
-      },
-      {
-        value: "5",
-        label: {
-          en: "Company Subsidiaries",
-          bg: "Дъщерни компании",
-          ru: "Дочерние компании"
-        },
-        icon: "fa-sitemap"
+          en: "Team Members",
+          bg: "Членове на екипа",
+          ru: "Членов команды"
+        }
       }
     ]
   },
-  
-  // Company History & Timeline
+  structure: {
+    title: {
+      en: "Our Companies",
+      bg: "Нашите компании",
+      ru: "Наши компании"
+    },
+    companies: [
+      {
+        id: "construction",
+        name: {
+          en: "BuildConstruction Ltd.",
+          bg: "BuildConstruction ООД",
+          ru: "BuildConstruction OOO"
+        },
+        description: {
+          en: "Our flagship construction company specializing in commercial and residential projects.",
+          bg: "Нашата флагманска строителна компания, специализирана в търговски и жилищни проекти.",
+          ru: "Наша флагманская строительная компания, специализирующаяся на коммерческих и жилых проектах."
+        },
+        icon: "fas fa-building"
+      },
+      {
+        id: "design",
+        name: {
+          en: "BuildDesign Ltd.",
+          bg: "BuildDesign ООД",
+          ru: "BuildDesign OOO"
+        },
+        description: {
+          en: "Architectural and interior design services for all types of buildings.",
+          bg: "Архитектурни и интериорни дизайнерски услуги за всички видове сгради.",
+          ru: "Услуги архитектурного и интерьерного дизайна для всех типов зданий."
+        },
+        icon: "fas fa-drafting-compass"
+      },
+      {
+        id: "materials",
+        name: {
+          en: "BuildMaterials Ltd.",
+          bg: "BuildMaterials ООД",
+          ru: "BuildMaterials OOO"
+        },
+        description: {
+          en: "Production and distribution of high-quality construction materials.",
+          bg: "Производство и дистрибуция на висококачествени строителни материали.",
+          ru: "Производство и распространение высококачественных строительных материалов."
+        },
+        icon: "fas fa-truck-loading"
+      },
+      {
+        id: "engineering",
+        name: {
+          en: "BuildEngineering Ltd.",
+          bg: "BuildEngineering ООД",
+          ru: "BuildEngineering OOO"
+        },
+        description: {
+          en: "Engineering solutions for complex construction challenges.",
+          bg: "Инженерни решения за сложни строителни предизвикателства.",
+          ru: "Инженерные решения для сложных строительных задач."
+        },
+        icon: "fas fa-cogs"
+      }
+    ]
+  },
   history: {
     title: {
       en: "Our History",
@@ -389,22 +442,22 @@ export const defaultHoldingContent = {
       ru: "Наша история"
     },
     description: {
-      en: "From our humble beginnings to becoming a leading construction holding, explore the key milestones in our company's history.",
-      bg: "От скромното ни начало до превръщането ни в лидер в строителния холдинг, разгледайте ключовите моменти в историята на нашата компания.",
-      ru: "От скромных начинаний до превращения в ведущий строительный холдинг, узнайте о ключевых вехах в истории нашей компании."
+      en: "From our humble beginnings as a small contractor to becoming a leading construction holding in the region.",
+      bg: "От скромните ни начала като малък строителен изпълнител до превръщането ни във водещ строителен холдинг в региона.",
+      ru: "От наших скромных начинаний в качестве небольшого строительного подрядчика до превращения в ведущий строительный холдинг в регионе."
     },
     milestones: [
       { 
         year: "1995", 
         title: {
-          en: "Company Founded", 
+          en: "Company Founded",
           bg: "Основаване на компанията",
           ru: "Основание компании"
-        },
+        }, 
         description: {
           en: "Started as a small residential contractor in Sofia with just 5 employees.",
           bg: "Започнахме като малък жилищен изпълнител в София с едва 5 служители.",
-          ru: "Начали как небольшой жилищный подрядчик в Софии с всего 5 сотрудниками."
+          ru: "Начали как маленький жилищный подрядчик в Софии с всего 5 сотрудниками."
         },
         icon: "fa-building",
         bgColor: "#0056b3"
@@ -412,14 +465,14 @@ export const defaultHoldingContent = {
       { 
         year: "2005", 
         title: {
-          en: "Commercial Expansion", 
+          en: "Commercial Expansion",
           bg: "Търговско разширение",
           ru: "Коммерческое расширение"
-        },
+        }, 
         description: {
           en: "Secured our first major commercial contracts throughout Bulgaria.",
           bg: "Осигурихме първите си големи търговски договори в цяла България.",
-          ru: "Получили первые крупные коммерческие контракты по всей Болгарии."
+          ru: "Обеспечили наши первые крупные коммерческие контракты по всей Болгарии."
         },
         icon: "fa-city",
         bgColor: "#ff7722"
@@ -427,14 +480,14 @@ export const defaultHoldingContent = {
       { 
         year: "2010", 
         title: {
-          en: "International Projects", 
+          en: "International Projects",
           bg: "Международни проекти",
           ru: "Международные проекты"
-        },
+        }, 
         description: {
           en: "Expanded operations to Romania, Serbia and Greece.",
-          bg: "Разширихме дейността си към Румъния, Сърбия и Гърция.",
-          ru: "Расширили деятельность в Румынию, Сербию и Грецию."
+          bg: "Разширихме дейността си в Румъния, Сърбия и Гърция.",
+          ru: "Расширили операции в Румынию, Сербию и Грецию."
         },
         icon: "fa-globe-europe",
         bgColor: "#28a745"
@@ -442,22 +495,20 @@ export const defaultHoldingContent = {
       { 
         year: "2020", 
         title: {
-          en: "Holding Formation", 
+          en: "Holding Formation",
           bg: "Формиране на холдинг",
           ru: "Формирование холдинга"
-        },
+        }, 
         description: {
           en: "Reorganized as BuildHolding with multiple specialized subsidiaries.",
           bg: "Реорганизирахме се като BuildHolding с множество специализирани дъщерни дружества.",
-          ru: "Реорганизованы как BuildHolding с несколькими специализированными дочерними компаниями."
+          ru: "Реорганизовались в BuildHolding с несколькими специализированными дочерними компаниями."
         },
         icon: "fa-sitemap",
         bgColor: "#6610f2"
       }
     ]
   },
-  
-  // Tabs Content - organized by tab ID
   tabs: {
     mission: {
       title: {
@@ -466,9 +517,9 @@ export const defaultHoldingContent = {
         ru: "Наша миссия"
       },
       content: {
-        en: "BuildHolding's mission is to deliver exceptional construction and development services through our family of specialized companies, focusing on innovation, quality, and client satisfaction.",
-        bg: "Мисията на BuildHolding е да предоставя изключителни строителни и развойни услуги чрез нашето семейство от специализирани компании, фокусирайки се върху иновации, качество и удовлетвореност на клиентите.",
-        ru: "Миссия BuildHolding - предоставлять исключительные строительные и девелоперские услуги через наше семейство специализированных компаний, уделяя особое внимание инновациям, качеству и удовлетворенности клиентов."
+        en: "BuildHolding's mission is to deliver exceptional construction and development services through our family of specialized companies, focusing on innovation, quality, and client satisfaction. We aim to transform the built environment while maintaining the highest standards of ethical business practices.",
+        bg: "Мисията на BuildHolding е да предоставя изключителни строителни и развойни услуги чрез нашето семейство от специализирани компании, фокусирайки се върху иновации, качество и удовлетвореност на клиентите. Стремим се да трансформираме изградената среда, като поддържаме най-високите стандарти за етични бизнес практики.",
+        ru: "Миссия BuildHolding - предоставлять исключительные строительные и девелоперские услуги через наше семейство специализированных компаний, уделяя особое внимание инновациям, качеству и удовлетворенности клиентов. Мы стремимся преобразить построенную среду, соблюдая самые высокие стандарты этичной деловой практики."
       }
     },
     who: {
@@ -478,9 +529,9 @@ export const defaultHoldingContent = {
         ru: "Кто мы"
       },
       content: {
-        en: "At BuildHolding, we are a family of specialized construction and real estate companies working together to create extraordinary buildings and spaces. With decades of combined experience, our team brings expertise in every aspect of the construction process.",
-        bg: "В BuildHolding сме семейство от специализирани строителни компании и компании за недвижими имоти, които работят заедно за създаването на изключителни сгради и пространства.",
-        ru: "В BuildHolding мы представляем семью специализированных строительных компаний и компаний по недвижимости, работающих вместе для создания выдающихся зданий и пространств."
+        en: "At BuildHolding, we are a family of specialized construction and real estate companies working together to create extraordinary buildings and spaces. With decades of combined experience, our team brings expertise in every aspect of the construction process, from initial planning to project delivery and beyond.",
+        bg: "В BuildHolding сме семейство от специализирани строителни компании и компании за недвижими имоти, които работят заедно за създаването на изключителни сгради и пространства. С десетилетия комбиниран опит, нашият екип внася експертиза във всеки аспект на строителния процес, от първоначалното планиране до предаването на проекта и след това.",
+        ru: "В BuildHolding мы представляем семью специализированных строительных компаний и компаний по недвижимости, работающих вместе для создания выдающихся зданий и пространств. Имея многолетний совокупный опыт, наша команда привносит знания во все аспекты строительного процесса, от первоначального планирования до сдачи проекта и далее."
       }
     },
     team: {
@@ -490,9 +541,9 @@ export const defaultHoldingContent = {
         ru: "Наша команда"
       },
       content: {
-        en: "BuildHolding brings together the best talent in the construction industry. Our diverse team of professionals includes architects, engineers, project managers, craftsmen, and specialists who share a common commitment to excellence.",
-        bg: "BuildHolding събира най-добрите таланти в строителната индустрия. Нашият разнообразен екип от професионалисти включва архитекти, инженери и специалисти.",
-        ru: "BuildHolding объединяет лучшие таланты в строительной отрасли. Наша разнообразная команда профессионалов включает архитекторов, инженеров и специалистов."
+        en: "BuildHolding brings together the best talent in the construction industry. Our diverse team of professionals includes architects, engineers, project managers, craftsmen, and specialists who share a common commitment to excellence. Together, we collaborate to deliver exceptional results on every project.",
+        bg: "BuildHolding събира най-добрите таланти в строителната индустрия. Нашият разнообразен екип от професионалисти включва архитекти, инженери, проектни мениджъри, занаятчии и специалисти, които споделят общ ангажимент към съвършенството. Заедно си сътрудничим, за да постигнем изключителни резултати при всеки проект.",
+        ru: "BuildHolding объединяет лучшие таланты в строительной отрасли. Наша разнообразная команда профессионалов включает архитекторов, инженеров, руководителей проектов, мастеров и специалистов, которых объединяет общая приверженность совершенству. Вместе мы сотрудничаем, чтобы достичь исключительных результатов в каждом проекте."
       }
     },
     equipment: {
@@ -515,8 +566,8 @@ export const defaultHoldingContent = {
       },
       description: {
         en: "We maintain rigorous quality control processes and adhere to international and local standards across all our operations. Our companies have earned numerous certifications that reflect our commitment to excellence.",
-        bg: "Поддържаме строги процеси за контрол на качеството и се придържаме към международните и местните стандарти във всички наши операции.",
-        ru: "Мы поддерживаем строгие процессы контроля качества и придерживаемся международных и местных стандартов во всех наших операциях."
+        bg: "Поддържаме строги процеси за контрол на качеството и се придържаме към международните и местните стандарти във всички наши операции. Нашите компании са получили множество сертификати, които отразяват нашия ангажимент към съвършенството.",
+        ru: "Мы поддерживаем строгие процессы контроля качества и придерживаемся международных и местных стандартов во всех наших операциях. Наши компании получили многочисленные сертификаты, отражающие нашу приверженность совершенству."
       }
     },
     timeline: {
@@ -527,8 +578,8 @@ export const defaultHoldingContent = {
       },
       description: {
         en: "Follow our journey from a small construction contractor to a diversified holding with multiple specialized businesses operating across Southeast Europe.",
-        bg: "Проследете нашето пътуване от малък строителен изпълнител до диверсифициран холдинг с множество специализирани бизнеси.",
-        ru: "Проследите наш путь от небольшого строительного подрядчика до диверсифицированного холдинга с несколькими специализированными предприятиями."
+        bg: "Проследете нашето пътуване от малък строителен изпълнител до диверсифициран холдинг с множество специализирани бизнеси, работещи в Югоизточна Европа.",
+        ru: "Проследите наш путь от небольшого строительного подрядчика до диверсифицированного холдинга с несколькими специализированными предприятиями, работающими по всей Юго-Восточной Европе."
       }
     },
     partners: {
@@ -540,7 +591,7 @@ export const defaultHoldingContent = {
       description: {
         en: "BuildHolding collaborates with leading suppliers, technology providers, and industry partners to deliver exceptional value and innovation on our projects.",
         bg: "BuildHolding си сътрудничи с водещи доставчици, технологични доставчици и индустриални партньори, за да предостави изключителна стойност и иновации в нашите проекти.",
-        ru: "BuildHolding сотрудничает с ведущими поставщиками, технологическими провайдерами и отраслевыми партнерами для обеспечения исключительной ценности и инноваций."
+        ru: "BuildHolding сотрудничает с ведущими поставщиками, технологическими провайдерами и отраслевыми партнерами, чтобы обеспечить исключительную ценность и инновации в наших проектах."
       }
     },
     clients: {
@@ -551,104 +602,11 @@ export const defaultHoldingContent = {
       },
       description: {
         en: "We are proud to have worked with a diverse range of clients across the public and private sectors. Our client relationships are built on trust, transparency, and consistently delivering high-quality results.",
-        bg: "Гордеем се, че сме работили с разнообразен кръг от клиенти от публичния и частния сектор. Нашите взаимоотношения с клиентите се основават на доверие и прозрачност.",
-        ru: "Мы гордимся тем, что работали с различными клиентами из государственного и частного секторов. Наши отношения с клиентами строятся на доверии и прозрачности."
+        bg: "Гордеем се, че сме работили с разнообразен кръг от клиенти от публичния и частния сектор. Нашите взаимоотношения с клиентите се основават на доверие, прозрачност и постоянно предоставяне на висококачествени резултати.",
+        ru: "Мы гордимся тем, что работали с различными клиентами из государственного и частного секторов. Наши отношения с клиентами строятся на доверии, прозрачности и стабильном предоставлении высококачественных результатов."
       }
     }
-  },
-  
-  // Sample Data Collections (for tabs)
-  equipment: [
-    { id: 'crane1', name: { en: 'Tower Crane', bg: 'Кулокран', ru: 'Башенный кран' }, image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'excavator1', name: { en: 'Excavator', bg: 'Багер', ru: 'Экскаватор' }, image: 'https://images.unsplash.com/photo-1579613832125-5d34a13ffe2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'concrete1', name: { en: 'Concrete Pumps', bg: 'Бетонови помпи', ru: 'Бетононасосы' }, image: 'https://images.unsplash.com/photo-1580462021833-a2841d0a1fce?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'scaffold1', name: { en: 'Scaffolding Systems', bg: 'Скеле', ru: 'Строительные леса' }, image: 'https://images.unsplash.com/photo-1575429885214-bc12e3e18bb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'drill1', name: { en: 'Drilling Equipment', bg: 'Сондажно оборудване', ru: 'Буровое оборудование' }, image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'survey1', name: { en: 'Surveying Technology', bg: 'Геодезическа технология', ru: 'Геодезическая технология' }, image: 'https://images.unsplash.com/photo-1576615278693-f8e095e37e01?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' }
-  ],
-  
-  qualifications: [
-    { 
-      id: 'iso9001', 
-      name: { en: 'ISO 9001:2015', bg: 'ISO 9001:2015', ru: 'ISO 9001:2015' },
-      description: { 
-        en: 'International standard for quality management systems, ensuring consistent delivery of products and services that meet customer requirements.',
-        bg: 'Международен стандарт за системи за управление на качеството, осигуряващ непрекъснато доставяне на продукти и услуги, които отговарят на изискванията на клиентите.',
-        ru: 'Международный стандарт систем менеджмента качества, обеспечивающий стабильную поставку продукции и услуг, соответствующих требованиям клиентов.'
-      },
-      certificate: 'https://via.placeholder.com/800x600?text=ISO+9001+Certificate'
-    },
-    { 
-      id: 'iso14001', 
-      name: { en: 'ISO 14001:2015', bg: 'ISO 14001:2015', ru: 'ISO 14001:2015' },
-      description: { 
-        en: 'Environmental management system certification that helps us minimize our impact on the environment.',
-        bg: 'Сертификация на системата за управление на околната среда, която ни помага да минимизираме въздействието си върху околната среда.',
-        ru: 'Сертификация системы экологического менеджмента, которая помогает нам минимизировать воздействие на окружающую среду.'
-      },
-      certificate: 'https://via.placeholder.com/800x600?text=ISO+14001+Certificate'
-    },
-    { 
-      id: 'iso45001', 
-      name: { en: 'ISO 45001:2018', bg: 'ISO 45001:2018', ru: 'ISO 45001:2018' },
-      description: { 
-        en: 'Occupational health and safety management system that helps us ensure a safe working environment.',
-        bg: 'Система за управление на здравето и безопасността при работа, която ни помага да осигурим безопасна работна среда.',
-        ru: 'Система менеджмента охраны здоровья и безопасности труда, которая помогает нам обеспечить безопасную рабочую среду.'
-      },
-      certificate: 'https://via.placeholder.com/800x600?text=ISO+45001+Certificate'
-    }
-  ],
-  
-  partners: [
-    { 
-      id: 'partner1', 
-      name: { en: 'EuroCement Group', bg: 'ЕвроЦимент Груп', ru: 'ЕвроЦемент Группа' }, 
-      logo: 'https://via.placeholder.com/150?text=EuroCement',
-      website: 'https://example.com/eurocement'
-    },
-    { 
-      id: 'partner2', 
-      name: { en: 'Steel Solutions Ltd', bg: 'Стийл Солюшънс ООД', ru: 'Стил Солюшнс ООО' }, 
-      logo: 'https://via.placeholder.com/150?text=SteelSolutions',
-      website: 'https://example.com/steelsolutions'
-    },
-    { 
-      id: 'partner3', 
-      name: { en: 'BuildTech Inc', bg: 'БилдТех Инк', ru: 'БилдТек Инк' }, 
-      logo: 'https://via.placeholder.com/150?text=BuildTech',
-      website: 'https://example.com/buildtech'
-    },
-    { 
-      id: 'partner4', 
-      name: { en: 'Sofia Cement', bg: 'София Цимент', ru: 'София Цемент' }, 
-      logo: 'https://via.placeholder.com/150?text=SofiaCement',
-      website: 'https://example.com/sofiacement'
-    }
-  ],
-  
-  clients: [
-    { 
-      id: 'client1', 
-      name: { en: 'Sofia Municipality', bg: 'Столична община', ru: 'Муниципалитет Софии' }, 
-      logo: 'https://via.placeholder.com/150?text=SofiaMunicipality'
-    },
-    { 
-      id: 'client2', 
-      name: { en: 'EuroCorp', bg: 'ЕвроКорп', ru: 'ЕвроКорп' }, 
-      logo: 'https://via.placeholder.com/150?text=EuroCorp'
-    },
-    { 
-      id: 'client3', 
-      name: { en: 'Global Retail', bg: 'Глобал Ритейл', ru: 'Глобал Ритейл' }, 
-      logo: 'https://via.placeholder.com/150?text=GlobalRetail'
-    },
-    { 
-      id: 'client4', 
-      name: { en: 'East European Bank', bg: 'Източноевропейска Банка', ru: 'Восточноевропейский Банк' }, 
-      logo: 'https://via.placeholder.com/150?text=EEBank'
-    }
-  ]
+  }
 };
 
 /**

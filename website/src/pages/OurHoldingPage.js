@@ -11,6 +11,141 @@ const OurHoldingPage = () => {
   const timelineRef = useRef(null);
   const [pageContent, setPageContent] = useState(null);
   
+  // Custom CSS for card flip effect
+  useEffect(() => {
+    // Add CSS for card-flip effect
+    const style = document.createElement('style');
+    style.textContent = `
+      .card-flip {
+        perspective: 1000px;
+        height: 100%;
+        cursor: pointer;
+      }
+      .card-flip-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        transition: transform 0.8s;
+        transform-style: preserve-3d;
+      }
+      .card-flip:hover .card-flip-inner {
+        transform: rotateY(180deg);
+      }
+      .card-flip-front, .card-flip-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        border-radius: 4px;
+      }
+      .card-flip-front {
+        background-color: white;
+        z-index: 2;
+      }
+      .card-flip-back {
+        transform: rotateY(180deg);
+      }
+      .equipment-card, .partner-card, .client-card {
+        height: 100%;
+        transition: transform 0.3s;
+      }
+      .equipment-card:hover, .partner-card:hover, .client-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      }
+      
+      /* Timeline styles */
+      .timeline {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .timeline::after {
+        content: '';
+        position: absolute;
+        width: 6px;
+        background-color: #e9ecef;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        margin-left: -3px;
+      }
+      .timeline-item {
+        padding: 10px 40px;
+        position: relative;
+        width: 50%;
+        box-sizing: border-box;
+      }
+      .timeline-item::after {
+        content: '';
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        background-color: white;
+        border: 4px solid #0056b3;
+        top: 18px;
+        border-radius: 50%;
+        z-index: 1;
+      }
+      .left {
+        left: 0;
+      }
+      .right {
+        left: 50%;
+      }
+      .left::after {
+        right: -12px;
+      }
+      .right::after {
+        left: -12px;
+      }
+      .timeline-badge {
+        position: absolute;
+        top: 16px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        z-index: 2;
+        color: white;
+        text-align: center;
+        line-height: 32px;
+      }
+      .left .timeline-badge {
+        right: 32px;
+      }
+      .right .timeline-badge {
+        left: 32px;
+      }
+      .timeline-panel {
+        padding: 20px;
+        background-color: white;
+        position: relative;
+        border-radius: 6px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      /* Certificate styles */
+      .quality-selector .list-group-item.active {
+        background-color: #0056b3;
+        border-color: #0056b3;
+      }
+      .certificate-display {
+        min-height: 500px;
+      }
+      .certificate-image-container {
+        text-align: center;
+        margin: 20px 0;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
   // Load content from Firebase
   useEffect(() => {
     const loadContent = async () => {
@@ -47,20 +182,202 @@ const OurHoldingPage = () => {
   
   // Equipment items - use content from service if available, otherwise fall back to hardcoded data
   const equipmentItems = Array.isArray(pageContent?.equipment) ? pageContent.equipment : [
-    { id: 'crane1', name: 'Tower Crane', image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'excavator1', name: 'Excavator', image: 'https://images.unsplash.com/photo-1579613832125-5d34a13ffe2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'bulldozer1', name: 'Bulldozer', image: 'https://images.unsplash.com/photo-1594412475796-20b69b6c5161?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'concrete1', name: 'Concrete Mixer', image: 'https://images.unsplash.com/photo-1617417367206-5f497d11fd26?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'loader1', name: 'Front Loader', image: 'https://images.unsplash.com/photo-1574789898709-42abaecf4ca4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' },
-    { id: 'forklift1', name: 'Forklift', image: 'https://images.unsplash.com/photo-1578086623300-69aeb53e83f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80' }
+    { 
+      id: 'crane1', 
+      name: { en: 'Tower Crane', bg: 'Кула кран', ru: 'Башенный кран' }, 
+      image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80',
+      description: { en: 'Used for high-rise construction', bg: 'Използва се за високо строителство', ru: 'Используется для высотного строительства' }
+    },
+    { 
+      id: 'excavator1', 
+      name: { en: 'Excavator', bg: 'Багер', ru: 'Экскаватор' }, 
+      image: 'https://images.unsplash.com/photo-1579613832125-5d34a13ffe2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80',
+      description: { en: 'Heavy equipment for digging and material handling', bg: 'Тежко оборудване за копаене и обработка на материали', ru: 'Тяжелое оборудование для рытья и обработки материалов' }
+    },
+    { 
+      id: 'bulldozer1', 
+      name: { en: 'Bulldozer', bg: 'Булдозер', ru: 'Бульдозер' }, 
+      image: 'https://images.unsplash.com/photo-1578091437495-6c7966a9a0be?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80',
+      description: { en: 'Earthmoving equipment for various construction tasks', bg: 'Земекопно оборудване за различни строителни задачи', ru: 'Землеройное оборудование для различных строительных задач' }
+    },
+    { 
+      id: 'concretetruck1', 
+      name: { en: 'Concrete Mixer Truck', bg: 'Бетоновоз', ru: 'Бетономешалка' }, 
+      image: 'https://images.unsplash.com/photo-1626372970029-1cd0ccc1bec8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80',
+      description: { en: 'Transports concrete mix to construction sites', bg: 'Транспортира бетонова смес до строителни обекти', ru: 'Транспортирует бетонную смесь на строительные площадки' }
+    }
   ];
   
   // Quality standards certifications - use content from service if available
   const qualifications = Array.isArray(pageContent?.qualifications) ? pageContent.qualifications : [
-    { id: 'iso9001', name: 'ISO 9001:2015', certificate: 'https://images.unsplash.com/photo-1561069934-eee225952461?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80' },
-    { id: 'iso14001', name: 'ISO 14001:2015', certificate: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80' },
-    { id: 'ohsas18001', name: 'OHSAS 18001', certificate: 'https://images.unsplash.com/photo-1611095790444-1dfa35e37b52?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80' },
-    { id: 'leed', name: 'LEED Certification', certificate: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80' }
+    { 
+      id: 'iso9001', 
+      name: { en: 'ISO 9001', bg: 'ISO 9001', ru: 'ISO 9001' }, 
+      certificate: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80', 
+      description: { 
+        en: 'Quality Management System - ensures that our products and services consistently meet customer requirements and quality is continuously improved.', 
+        bg: 'Система за управление на качеството - гарантира, че нашите продукти и услуги последователно отговарят на изискванията на клиентите и качеството непрекъснато се подобрява.', 
+        ru: 'Система менеджмента качества - гарантирует, что наши продукты и услуги постоянно соответствуют требованиям клиентов и качество постоянно улучшается.'
+      }
+    },
+    { 
+      id: 'iso14001', 
+      name: { en: 'ISO 14001', bg: 'ISO 14001', ru: 'ISO 14001' }, 
+      certificate: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80', 
+      description: { 
+        en: 'Environmental Management System - demonstrates our commitment to reducing environmental impact and promoting sustainability.',
+        bg: 'Система за управление на околната среда - демонстрира нашия ангажимент за намаляване на въздействието върху околната среда и насърчаване на устойчивостта.',
+        ru: 'Система экологического менеджмента - демонстрирует нашу приверженность снижению воздействия на окружающую среду и продвижению устойчивого развития.'
+      }
+    },
+    { 
+      id: 'iso45001', 
+      name: { en: 'ISO 45001', bg: 'ISO 45001', ru: 'ISO 45001' }, 
+      certificate: 'https://images.unsplash.com/photo-1596091954256-7f1a94bf0be8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80', 
+      description: { 
+        en: 'Occupational Health and Safety Management System - ensures a safe and healthy workplace for all our employees and contractors.',
+        bg: 'Система за управление на здравето и безопасността при работа - осигурява безопасно и здравословно работно място за всички наши служители и подизпълнители.',
+        ru: 'Система менеджмента охраны здоровья и безопасности труда - обеспечивает безопасное и здоровое рабочее место для всех наших сотрудников и подрядчиков.'
+      }
+    },
+    { 
+      id: 'eurocodes', 
+      name: { en: 'Eurocodes', bg: 'Еврокодове', ru: 'Еврокоды' }, 
+      certificate: 'https://images.unsplash.com/photo-1464938050520-ef2270bb8ce8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80', 
+      description: { 
+        en: 'European standards for structural design and calculation - ensures our buildings meet the highest structural safety standards.',
+        bg: 'Европейски стандарти за структурно проектиране и изчисляване - гарантира, че нашите сгради отговарят на най-високите стандарти за структурна безопасност.',
+        ru: 'Европейские стандарты для проектирования и расчета конструкций - гарантирует, что наши здания соответствуют самым высоким стандартам структурной безопасности.'
+      }
+    }
+  ];
+  
+  // Partner companies - use content from service if available
+  const partners = Array.isArray(pageContent?.partners) ? pageContent.partners : [
+    { 
+      id: 'partner1', 
+      name: { en: 'SteelTech Industries', bg: 'SteelTech Индъстрис', ru: 'SteelTech Индастриз' }, 
+      logo: 'https://via.placeholder.com/150x80?text=SteelTech', 
+      description: { 
+        en: 'Providing high-quality steel products and structural solutions since 1995.', 
+        bg: 'Предоставя висококачествени стоманени продукти и структурни решения от 1995 г.', 
+        ru: 'Поставляет высококачественные стальные изделия и конструкционные решения с 1995 года.' 
+      },
+      website: 'https://example.com/steeltech',
+      year: '2008'
+    },
+    { 
+      id: 'partner2', 
+      name: { en: 'GlassMasters', bg: 'ГласМастърс', ru: 'ГласМастерс' }, 
+      logo: 'https://via.placeholder.com/150x80?text=GlassMasters', 
+      description: { 
+        en: 'Leading provider of architectural glass solutions for modern buildings.', 
+        bg: 'Водещ доставчик на архитектурни стъклени решения за модерни сгради.', 
+        ru: 'Ведущий поставщик архитектурных стеклянных решений для современных зданий.' 
+      },
+      website: 'https://example.com/glassmasters',
+      year: '2012'
+    },
+    { 
+      id: 'partner3', 
+      name: { en: 'EuroMaterials', bg: 'ЕвроМатериалс', ru: 'ЕвроМатериалс' }, 
+      logo: 'https://via.placeholder.com/150x80?text=EuroMaterials', 
+      description: { 
+        en: 'European supplier of premium building materials for commercial construction.', 
+        bg: 'Европейски доставчик на премиум строителни материали за търговско строителство.', 
+        ru: 'Европейский поставщик первоклассных строительных материалов для коммерческого строительства.' 
+      },
+      website: 'https://example.com/euromaterials',
+      year: '2015'
+    },
+    { 
+      id: 'partner4', 
+      name: { en: 'TechDesign Architects', bg: 'ТехДизайн Архитекти', ru: 'ТехДизайн Архитекторы' }, 
+      logo: 'https://via.placeholder.com/150x80?text=TechDesign', 
+      description: { 
+        en: 'Award-winning architectural firm specializing in sustainable commercial designs.', 
+        bg: 'Отличена архитектурна фирма, специализирана в устойчиви търговски дизайни.', 
+        ru: 'Отмеченная наградами архитектурная фирма, специализирующаяся на устойчивых коммерческих проектах.' 
+      },
+      website: 'https://example.com/techdesign',
+      year: '2018'
+    }
+  ];
+  
+  // Client companies - use content from service if available
+  const clients = Array.isArray(pageContent?.clients) ? pageContent.clients : [
+    { 
+      id: 'client1', 
+      name: { en: 'Global Banking Corp', bg: 'Глобал Банкинг Корп', ru: 'Глобал Банкинг Корп' }, 
+      logo: 'https://via.placeholder.com/120x60?text=GBC', 
+      type: { en: 'Financial', bg: 'Финансов', ru: 'Финансовый' },
+      projects: 12,
+      highlight: { 
+        en: 'Built their award-winning headquarters in Sofia', 
+        bg: 'Построихме тяхната централа в София, носител на награди', 
+        ru: 'Построили их отмеченную наградами штаб-квартиру в Софии' 
+      }
+    },
+    { 
+      id: 'client2', 
+      name: { en: 'TechNova', bg: 'ТехНова', ru: 'ТехНова' }, 
+      logo: 'https://via.placeholder.com/120x60?text=TechNova', 
+      type: { en: 'Technology', bg: 'Технологии', ru: 'Технологии' },
+      projects: 8,
+      highlight: { 
+        en: 'Completed 3 innovation centers across Eastern Europe', 
+        bg: 'Завършени 3 иновационни центъра в Източна Европа', 
+        ru: 'Завершены 3 инновационных центра по всей Восточной Европе' 
+      }
+    },
+    { 
+      id: 'client3', 
+      name: { en: 'EuroRetail Group', bg: 'ЕвроРитейл Груп', ru: 'ЕвроРитейл Груп' }, 
+      logo: 'https://via.placeholder.com/120x60?text=ERG', 
+      type: { en: 'Retail', bg: 'Търговия на дребно', ru: 'Розничная торговля' },
+      projects: 24,
+      highlight: { 
+        en: 'Built 24 shopping centers in 5 countries', 
+        bg: 'Построени 24 търговски центъра в 5 държави', 
+        ru: 'Построены 24 торговых центра в 5 странах' 
+      }
+    },
+    { 
+      id: 'client4', 
+      name: { en: 'GreenEnergy Power', bg: 'ГрийнЕнерджи Пауър', ru: 'ГринЭнерджи Пауэр' }, 
+      logo: 'https://via.placeholder.com/120x60?text=GEP', 
+      type: { en: 'Energy', bg: 'Енергетика', ru: 'Энергетика' },
+      projects: 6,
+      highlight: { 
+        en: 'Constructed sustainable power plants and infrastructure', 
+        bg: 'Изградени устойчиви електроцентрали и инфраструктура', 
+        ru: 'Построены устойчивые электростанции и инфраструктура' 
+      }
+    },
+    { 
+      id: 'client5', 
+      name: { en: 'MediCare Hospitals', bg: 'МедиКеър Хоспиталс', ru: 'МедиКэр Хоспиталс' }, 
+      logo: 'https://via.placeholder.com/120x60?text=MCH', 
+      type: { en: 'Healthcare', bg: 'Здравеопазване', ru: 'Здравоохранение' },
+      projects: 5,
+      highlight: { 
+        en: 'Developed state-of-the-art medical facilities', 
+        bg: 'Разработени съвременни медицински съоръжения', 
+        ru: 'Разработаны современные медицинские учреждения' 
+      }
+    },
+    { 
+      id: 'client6', 
+      name: { en: 'EuroGovernment', bg: 'ЕвроГавърнмънт', ru: 'ЕвроГавернмент' }, 
+      logo: 'https://via.placeholder.com/120x60?text=EG', 
+      type: { en: 'Government', bg: 'Правителство', ru: 'Правительство' },
+      projects: 10,
+      highlight: { 
+        en: 'Built municipal and government buildings across the region', 
+        bg: 'Построени общински и правителствени сгради в региона', 
+        ru: 'Построены муниципальные и правительственные здания по всему региону' 
+      }
+    }
   ];
   
   // Timeline milestones - use content from service if available
@@ -99,78 +416,6 @@ const OurHoldingPage = () => {
     }
   ];
   
-  // Partners for the info cards
-  const partners = Array.isArray(pageContent?.partners) ? pageContent.partners : [
-    { 
-      id: 'partner1', 
-      name: 'Construct Co.', 
-      logo: 'https://via.placeholder.com/150?text=Construct', 
-      type: 'Material Supplier',
-      description: 'Premier supplier of concrete and steel materials for all our major projects.',
-      year: '2005'
-    },
-    { 
-      id: 'partner2', 
-      name: 'Tech Solutions', 
-      logo: 'https://via.placeholder.com/150?text=TechSol', 
-      type: 'Technology Provider',
-      description: 'Innovative construction technology solutions for smart buildings.',
-      year: '2012'
-    },
-    { 
-      id: 'partner3', 
-      name: 'BuildTech Inc.', 
-      logo: 'https://via.placeholder.com/150?text=BuildTech', 
-      type: 'Equipment Provider',
-      description: 'Specialized construction equipment for complex building requirements.',
-      year: '2008'
-    },
-    { 
-      id: 'partner4', 
-      name: 'Sofia Cement', 
-      logo: 'https://via.placeholder.com/150?text=SofiaCement', 
-      type: 'Material Supplier',
-      description: 'Local supplier of high-quality cement and concrete mixes.',
-      year: '2001'
-    }
-  ];
-  
-  // Clients for the info cards
-  const clients = Array.isArray(pageContent?.clients) ? pageContent.clients : [
-    { 
-      id: 'client1', 
-      name: 'Sofia Municipality', 
-      logo: 'https://via.placeholder.com/150?text=SofiaMunicipality', 
-      type: 'Government',
-      projects: 15,
-      highlight: 'Sofia Central Square Renovation'
-    },
-    { 
-      id: 'client2', 
-      name: 'EuroCorp', 
-      logo: 'https://via.placeholder.com/150?text=EuroCorp', 
-      type: 'Corporate',
-      projects: 8,
-      highlight: 'EuroCorp Headquarters'
-    },
-    { 
-      id: 'client3', 
-      name: 'Global Retail', 
-      logo: 'https://via.placeholder.com/150?text=GlobalRetail', 
-      type: 'Retail',
-      projects: 12,
-      highlight: 'Paradise Mall Construction'
-    },
-    { 
-      id: 'client4', 
-      name: 'East European Bank', 
-      logo: 'https://via.placeholder.com/150?text=EEBank', 
-      type: 'Financial',
-      projects: 6,
-      highlight: 'EEB Tower'
-    }
-  ];
-
   useEffect(() => {
     // Handle timeline animation
     if (activeTab === 'timeline' && timelineRef.current) {
@@ -490,7 +735,7 @@ const OurHoldingPage = () => {
             </div>
           </div>
           
-          {/* Equipment Tab - Grid View */}
+          {/* Equipment Tab - Rotating Cards */}
           <div 
             className={`tab-pane fade ${activeTab === 'equipment' ? 'show active' : ''}`} 
             id="equipment" 
@@ -503,24 +748,47 @@ const OurHoldingPage = () => {
               </div>
             </div>
             
-            <div className="row equipment-grid">
-              {equipmentItems.map(item => (
-                <div className="col-md-6 col-lg-4 mb-4" key={item.id}>
-                  <div className="equipment-card card border-0 shadow-sm h-100">
-                    <img 
-                      src={item.image} 
-                      className="card-img-top" 
-                      alt={typeof item.name === 'object' ? (item.name[t('language')] || item.name.en || item.id) : item.name}
-                      style={{height: '200px', objectFit: 'cover'}}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/400x200?text=Equipment";
-                      }}
-                    />
-                    <div className="card-body">
-                      <h5 className="card-title">
-                        {typeof item.name === 'object' ? (item.name[t('language')] || item.name.en || item.id) : item.name}
-                      </h5>
+            <div className="row">
+              {equipmentItems.map((item) => (
+                <div className="col-md-6 col-lg-3 mb-4" key={item.id}>
+                  <div className="card-flip">
+                    <div className="card-flip-inner">
+                      {/* Front of the card */}
+                      <div className="card-flip-front">
+                        <div className="card h-100 border-0 shadow-sm">
+                          <img 
+                            src={item.image} 
+                            className="card-img-top" 
+                            alt={typeof item.name === 'object' ? (item.name[t('language')] || item.name.en || item.id) : item.name}
+                            style={{height: '200px', objectFit: 'cover'}}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "https://via.placeholder.com/400x200?text=Equipment";
+                            }}
+                          />
+                          <div className="card-body text-center">
+                            <h5 className="card-title">
+                              {typeof item.name === 'object' ? (item.name[t('language')] || item.name.en || item.id) : item.name}
+                            </h5>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Back of the card */}
+                      <div className="card-flip-back">
+                        <div className="card h-100 border-0 shadow-sm bg-primary text-white">
+                          <div className="card-body d-flex flex-column justify-content-center">
+                            <h5 className="card-title mb-3">
+                              {typeof item.name === 'object' ? (item.name[t('language')] || item.name.en || item.id) : item.name}
+                            </h5>
+                            <p className="card-text">
+                              {typeof item.description === 'object' ? 
+                                (item.description[t('language')] || item.description.en || t('ourHolding.equipment.defaultDescription')) : 
+                                (item.description || t('ourHolding.equipment.defaultDescription'))}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -528,67 +796,65 @@ const OurHoldingPage = () => {
             </div>
           </div>
           
-          {/* Quality Standards Tab - Accordion */}
+          {/* Quality Standards Tab - Selector and Certificate Display */}
           <div 
             className={`tab-pane fade ${activeTab === 'quality' ? 'show active' : ''}`} 
             id="quality" 
             role="tabpanel"
           >
-            <div className="row mb-4">
-              <div className="col-12">
+            <div className="row">
+              <div className="col-lg-4 mb-4">
                 <h2>{getTranslatedContent('quality', 'title', t('ourHolding.tabs.quality.title'))}</h2>
                 <p className="lead mb-4">{getTranslatedContent('quality', 'description', t('ourHolding.tabs.quality.content'))}</p>
-              </div>
-            </div>
-            
-            <div className="row">
-              <div className="col-md-4 mb-4">
-                <ul className="nav flex-column nav-tabs certifications-tabs" role="tablist">
-                  {qualifications.map(cert => (
-                    <li className="nav-item" key={cert.id}>
-                      <button 
-                        className={`nav-link ${activeQualification === cert.id ? 'active' : ''}`} 
-                        onClick={() => setActiveQualification(cert.id)}
-                        role="tab"
-                      >
-                        {typeof cert.name === 'object' ? (cert.name[t('language')] || cert.name.en || cert.id) : cert.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="col-md-8 mb-4">
-                <div className="tab-content certification-content">
-                  {qualifications.map(cert => (
-                    <div 
-                      key={cert.id}
-                      className={`tab-pane fade ${activeQualification === cert.id ? 'show active' : ''}`}
-                      role="tabpanel"
+                
+                <div className="list-group quality-selector">
+                  {qualifications.map(qual => (
+                    <button
+                      key={qual.id}
+                      className={`list-group-item list-group-item-action ${activeQualification === qual.id ? 'active' : ''}`}
+                      onClick={() => setActiveQualification(qual.id)}
                     >
-                      <div className="card">
-                        <img 
-                          src={cert.certificate} 
-                          className="card-img-top" 
-                          alt={typeof cert.name === 'object' ? (cert.name[t('language')] || cert.name.en || cert.id) : cert.name}
-                          style={{height: '300px', objectFit: 'cover'}}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "https://via.placeholder.com/800x600?text=Certificate";
-                          }}
-                        />
-                        <div className="card-body">
-                          <h5 className="card-title">
-                            {typeof cert.name === 'object' ? (cert.name[t('language')] || cert.name.en || cert.id) : cert.name}
-                          </h5>
-                          <p className="card-text">
-                            {typeof cert.description === 'object' ? 
-                              (cert.description[t('language')] || cert.description.en || t('ourHolding.quality.standardDescription')) : 
-                              (cert.description || t('ourHolding.quality.standardDescription'))}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                      {typeof qual.name === 'object' ? (qual.name[t('language')] || qual.name.en || qual.id) : qual.name}
+                    </button>
                   ))}
+                </div>
+              </div>
+              
+              <div className="col-lg-8">
+                <div className="certificate-display p-3 bg-light rounded shadow-sm">
+                  <h4 className="mb-3">
+                    {(() => {
+                      const qual = qualifications.find(q => q.id === activeQualification);
+                      return typeof qual?.name === 'object' 
+                        ? (qual.name[t('language')] || qual.name.en || qual.id) 
+                        : (qual?.name || '');
+                    })()}
+                  </h4>
+                  <div className="certificate-image-container">
+                    <img 
+                      src={qualifications.find(q => q.id === activeQualification)?.certificate || ''} 
+                      alt={`${(() => {
+                        const qual = qualifications.find(q => q.id === activeQualification);
+                        return typeof qual?.name === 'object' 
+                          ? (qual.name[t('language')] || qual.name.en || qual.id) 
+                          : (qual?.name || '');
+                      })()} Certificate`}
+                      className="img-fluid rounded certificate-image"
+                      style={{maxHeight: '400px', width: 'auto'}}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://via.placeholder.com/800x600?text=Certificate";
+                      }}
+                    />
+                  </div>
+                  <p className="mt-3">
+                    {(() => {
+                      const qual = qualifications.find(q => q.id === activeQualification);
+                      return typeof qual?.description === 'object' 
+                        ? (qual.description[t('language')] || qual.description.en || '') 
+                        : (qual?.description || '');
+                    })()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -607,7 +873,7 @@ const OurHoldingPage = () => {
               </div>
             </div>
             
-            <div className="timeline">
+            <div className="timeline" ref={timelineRef}>
               {milestones.map((milestone, index) => (
                 <div className={`timeline-item ${index % 2 ? 'right' : 'left'}`} key={index}>
                   <div className="timeline-badge" style={{ backgroundColor: milestone.bgColor || '#0056b3' }}>
@@ -627,7 +893,7 @@ const OurHoldingPage = () => {
             </div>
           </div>
           
-          {/* Partners Tab - Card Grid */}
+          {/* Partners Tab - Rotating Cards */}
           <div 
             className={`tab-pane fade ${activeTab === 'partners' ? 'show active' : ''}`} 
             id="partners" 
@@ -641,32 +907,61 @@ const OurHoldingPage = () => {
             </div>
             
             <div className="row">
-              {partners.map(partner => (
-                <div className="col-md-4 col-lg-3 mb-4" key={partner.id}>
-                  <div className="card partner-card h-100 border-0 shadow-sm">
-                    <div className="card-body text-center">
-                      <img 
-                        src={partner.logo} 
-                        alt={typeof partner.name === 'object' ? 
-                          (partner.name[t('language')] || partner.name.en || 'Partner') : 
-                          (partner.name || 'Partner')}
-                        className="img-fluid partner-logo mb-3"
-                        style={{maxHeight: '80px'}}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "https://via.placeholder.com/150x80?text=Partner";
-                        }}
-                      />
-                      <h5 className="card-title">
-                        {typeof partner.name === 'object' ? 
-                          (partner.name[t('language')] || partner.name.en || 'Partner') : 
-                          (partner.name || 'Partner')}
-                      </h5>
-                      {partner.website && (
-                        <a href={partner.website} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary mt-2">
-                          {t('common.visitWebsite')}
-                        </a>
-                      )}
+              {partners.map((partner) => (
+                <div className="col-md-6 col-lg-3 mb-4" key={partner.id}>
+                  <div className="card-flip">
+                    <div className="card-flip-inner">
+                      {/* Front of the card */}
+                      <div className="card-flip-front">
+                        <div className="card h-100 border-0 shadow-sm">
+                          <div className="card-body text-center">
+                            <img 
+                              src={partner.logo} 
+                              alt={typeof partner.name === 'object' ? 
+                                (partner.name[t('language')] || partner.name.en || 'Partner') : 
+                                (partner.name || 'Partner')}
+                              className="img-fluid partner-logo mb-3"
+                              style={{maxHeight: '80px'}}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://via.placeholder.com/150x80?text=Partner";
+                              }}
+                            />
+                            <h5 className="card-title">
+                              {typeof partner.name === 'object' ? 
+                                (partner.name[t('language')] || partner.name.en || 'Partner') : 
+                                (partner.name || 'Partner')}
+                            </h5>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Back of the card */}
+                      <div className="card-flip-back">
+                        <div className="card h-100 border-0 shadow-sm bg-info text-white">
+                          <div className="card-body d-flex flex-column justify-content-center">
+                            <h5 className="card-title">
+                              {typeof partner.name === 'object' ? 
+                                (partner.name[t('language')] || partner.name.en || 'Partner') : 
+                                (partner.name || 'Partner')}
+                            </h5>
+                            <p className="partner-year">
+                              <i className="fas fa-handshake me-2"></i>
+                              {t('ourHolding.partners.since')} {partner.year}
+                            </p>
+                            <p className="card-text">
+                              {typeof partner.description === 'object' ? 
+                                (partner.description[t('language')] || partner.description.en || '') : 
+                                (partner.description || '')}
+                            </p>
+                            {partner.website && (
+                              <a href={partner.website} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-light mt-2">
+                                {t('common.visitWebsite')}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -674,7 +969,7 @@ const OurHoldingPage = () => {
             </div>
           </div>
           
-          {/* Clients Tab - Grid View */}
+          {/* Clients Tab - Rotating Cards */}
           <div 
             className={`tab-pane fade ${activeTab === 'clients' ? 'show active' : ''}`} 
             id="clients" 
@@ -688,28 +983,62 @@ const OurHoldingPage = () => {
             </div>
             
             <div className="row">
-              {clients.map(client => (
-                <div className="col-md-3 col-lg-2 mb-4" key={client.id}>
-                  <div className="client-card card h-100 border-0 shadow-sm">
-                    <div className="card-body text-center p-3">
-                      <img 
-                        src={client.logo} 
-                        alt={typeof client.name === 'object' ? 
-                          (client.name[t('language')] || client.name.en || 'Client') : 
-                          (client.name || 'Client')} 
-                        className="img-fluid client-logo"
-                        style={{maxHeight: '60px'}}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "https://via.placeholder.com/120x60?text=Client";
-                        }}
-                      />
+              {clients.map((client) => (
+                <div className="col-md-4 col-lg-3 mb-4" key={client.id}>
+                  <div className="card-flip">
+                    <div className="card-flip-inner">
+                      {/* Front of the card */}
+                      <div className="card-flip-front">
+                        <div className="card h-100 border-0 shadow-sm">
+                          <div className="card-body text-center p-3">
+                            <img 
+                              src={client.logo} 
+                              alt={typeof client.name === 'object' ? 
+                                (client.name[t('language')] || client.name.en || 'Client') : 
+                                (client.name || 'Client')} 
+                              className="img-fluid client-logo"
+                              style={{maxHeight: '60px'}}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://via.placeholder.com/120x60?text=Client";
+                              }}
+                            />
+                            <p className="client-name mb-0 mt-2">
+                              {typeof client.name === 'object' ? 
+                                (client.name[t('language')] || client.name.en || 'Client') : 
+                                (client.name || 'Client')}
+                            </p>
+                            <span className="client-type badge bg-secondary mt-1">
+                              {typeof client.type === 'object' ? 
+                                (client.type[t('language')] || client.type.en || '') : 
+                                (client.type || '')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                       
-                      <p className="client-name small mt-2 mb-0">
-                        {typeof client.name === 'object' ? 
-                          (client.name[t('language')] || client.name.en || 'Client') : 
-                          (client.name || 'Client')}
-                      </p>
+                      {/* Back of the card */}
+                      <div className="card-flip-back">
+                        <div className="card h-100 border-0 shadow-sm bg-success text-white">
+                          <div className="card-body d-flex flex-column justify-content-center">
+                            <h5 className="card-title mb-2">
+                              {typeof client.name === 'object' ? 
+                                (client.name[t('language')] || client.name.en || 'Client') : 
+                                (client.name || 'Client')}
+                            </h5>
+                            <div className="client-projects-count mb-2">
+                              <span className="projects-number">{client.projects}</span>
+                              <span className="projects-label ms-1">{t('ourHolding.clients.projectsCompleted')}</span>
+                            </div>
+                            <p className="client-highlight">
+                              <i className="fas fa-star me-2"></i>
+                              {typeof client.highlight === 'object' ? 
+                                (client.highlight[t('language')] || client.highlight.en || '') : 
+                                (client.highlight || '')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
